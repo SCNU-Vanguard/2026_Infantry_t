@@ -1,0 +1,87 @@
+/**
+* @file gimbal.h
+ * @author guatai (2508588132@qq.com)
+ * @brief
+ * @version 0.1
+ * @date 2025-08-12
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+
+#ifndef __GIMBAL_H__
+#define __GIMBAL_H__
+
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "robot_frame_config.h"
+#include "message_center.h"
+
+#include "DJI_motor.h"
+#include "DM_motor.h"
+#include "remote_control.h"
+#include "INS.h"
+
+#include "pid.h"
+
+typedef enum
+{
+	AUTO_FOLLOW = 1,//云台跟随
+	SHOOT = 3,//手动射击
+	STOP_SHOOT = 2,//停止发射
+	AUTO_SHOOT = 4,//自瞄+手打
+	AUTO_FIRE = 5  //自瞄+火控
+} shooter_strategy_e;//开火策略
+
+typedef enum
+{
+	CTRL_HEAD = 1,
+	CTRL_NECK = 3,//启动云台控制
+	STOP_GIMBAL = 2,//停止云台控制
+} gimbal_ctrl_e;//云台控制
+
+typedef struct
+{
+	shooter_strategy_e shooter;
+	gimbal_ctrl_e ctrl_mode;
+
+	uint8_t friction_state;//摩擦轮状态:0-关闭，1-开启
+	uint8_t shoot_advice;
+	uint8_t mouse_flag;//优化操作手界面超调现象
+	uint8_t spin_flag;
+
+	float pitch_init;//上电初始化pitch角度
+	float pitch;
+	float yaw;
+
+	float v_yaw;          //YAW_角速度
+	float v_pitch_neck;		
+	float v_pitch_head;	
+
+	float v_shoot;
+}__attribute__((__packed__)) Gimbal_CmdTypedef;
+
+
+typedef struct
+{
+	float yaw_diff;
+	float pitch_diff;
+
+	float yaw;
+	float pitch;
+}__attribute__((__packed__)) Gimbal_Auto; //自瞄所传参数结构体
+
+
+/**/
+extern Gimbal_CmdTypedef gimbal_cmd;
+extern DM_motor_t *DM_4310_pitch_head;
+extern DM_motor_t *DM_4310_pitch_neck;
+extern DM_motor_t *DM_6220_yaw;
+
+/**/
+void Gimbal_Init(void);
+void Gimbal_Control_Remote(void);
+
+#endif /* __GIMBAL_H__ */
