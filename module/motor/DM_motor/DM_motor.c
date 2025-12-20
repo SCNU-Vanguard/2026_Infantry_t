@@ -482,7 +482,7 @@ void DM_Motor_Control(void)
         // pid_ref会顺次通过被启用的闭环充当数据的载体
         // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
         // dm_diff的值需要自己另外做处理，比如使其指向视觉发送的目标装甲板的偏差值
-        if ((motor_setting->close_loop_type & ANGLE_LOOP) && (motor_setting->outer_loop_type == ANGLE_LOOP))
+        if ((motor_setting->close_loop_type & (ANGLE_LOOP | SPEED_LOOP)) && (motor_setting->outer_loop_type == ANGLE_LOOP))
         {
             if (motor_setting->angle_feedback_source == OTHER_FEED)
             {

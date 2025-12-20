@@ -59,7 +59,7 @@ motor_init_config_t chassis_2006_init = {
     .motor_type = M2006,
 
     .can_init_config = {
-        .can_handle = &hfdcan1,
+        .can_handle = &hfdcan2,//云台can2
         .tx_id = 0x05,
         .rx_id = 0x05,
     },

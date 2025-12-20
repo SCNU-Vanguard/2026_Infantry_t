@@ -21,8 +21,10 @@
 
 #include "DJI_motor.h"
 #include "DM_motor.h"
+
 #include "remote_control.h"
 #include "INS.h"
+#include "chassis.h"
 
 #include "pid.h"
 

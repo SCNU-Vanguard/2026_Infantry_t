@@ -44,7 +44,7 @@
 #define REMOTE_Y_SEN 0.005
 #define REMOTE_OMEGA_Z_SEN 0.1f  //6.6
 
-#define REMOTE_YAW_SEN 0.001f       //0.66
+#define REMOTE_YAW_SEN 0.000015f       
 #define REMOTE_PITCH_SEN 0.000002f
 
 /*云台相关参数*/    //注意大小问题
@@ -54,5 +54,7 @@
 
 #define PITCH_HEAD_MIN_ANGLE  0.1f //rad , 对应缩头时的角度
 #define PITCH_HEAD_MAX_ANGLE  -0.45f  //rad , 对应伸出头时的角度
+
+#define YAW_MAX_SPEED 2.0f //rad/s
 
 #endif /* __ROBOT_FRAME_CONFIG_H__ */

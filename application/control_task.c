@@ -28,21 +28,20 @@ void Control_Task_Init(void)
  * @brief  	底盘坐标系转云台坐标系
  * @param	底盘命令结构体指针
  * @param   底盘坐标系中，云台yaw与底盘x平行时yaw轴电机角度（编码值）
- * @param   yaw电机当前角度（编码值）
+ * @param   yaw电机当前角度（-PI ~ PI）
  * @retval 	无
  */
 void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_ang)
 {
-	float bias_tmp = (gim_ang - chs_zeropoint + 8192.0f);
-	if ( bias_tmp > 8192 )
-		bias_tmp -= 8192;
-	else if ( bias_tmp < 0 )
-		bias_tmp += 8192;
+	float bias_tmp = (gim_ang - chs_zeropoint + 2 * PI) ; 
 
-	bias_tmp = bias_tmp / 8192 * 2 * PI;
+	if ( bias_tmp > 2 * PI )
+		bias_tmp -= 2 * PI;
+	else if ( bias_tmp < 0 )
+		bias_tmp += 2 * PI;
 	
-	float vx_tmp = cmd -> vx * cosf (bias_tmp) + cmd -> vy * sinf (bias_tmp);
-	float vy_tmp = - cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
+	float vx_tmp = cmd -> vx * cosf (bias_tmp) - cmd -> vy * sinf (bias_tmp);
+	float vy_tmp = cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
 	cmd -> vx = vx_tmp;
 	cmd -> vy = vy_tmp;
 }
@@ -50,7 +49,7 @@ void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_
 
 void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 {
-
+//注意正反
 	chs -> vx = (float) rc_ctl -> rc . rocker_l1 * REMOTE_X_SEN ;
 	chs -> vy = (float) rc_ctl -> rc . rocker_l_ * REMOTE_Y_SEN ;
 
@@ -101,6 +100,7 @@ static void Control_Task(void *argument)
     {
         
         Remote_Ctrl (&gimbal_cmd, &chassis_cmd);
+			  Chassis_Cmd_Trans(&chassis_cmd, -PI, DM_6220_yaw -> receive_data.position);//底盘坐标系转云台坐标系
 
         control_task_diff = osKernelGetTickCount() - time;
         time = osKernelGetTickCount();

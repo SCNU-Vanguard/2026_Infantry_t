@@ -14,6 +14,9 @@ DJI_motor_instance_t *chassis_m3508[4];
 Chassis_CmdTypedef chassis_cmd;
 float target_speed[4] = {0};//底盘解算出的电机目标值
 
+/*TEST*/
+float test_omega;
+
 //注意堆栈大小，使用同一个结构体，堆栈太小到会导致配置错误
 PID_t chassis_3508_speed_pid = {
     .kp = 20.0f,
@@ -84,7 +87,7 @@ void Mecanum_Solve(Chassis_CmdTypedef *cmd, float *ret)
 		   3\\      //2
 					
 	*/
-  float omega_z = cmd->omega_z + cmd->omega_fllow;
+  float omega_z = cmd->omega_z + cmd->omega_follow;
 
   ret[0] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 1.414f) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
   ret[1] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 1.414f) - (cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
@@ -149,6 +152,8 @@ void Chassis_Ctrl_Remote(void)
 {
         //底盘解算
         Mecanum_Solve(&chassis_cmd, target_speed);
+        //获取底盘自旋速度
+        chassis_cmd.omega_follow = - Chassis_Get_Omega(chassis_m3508);
         //设目标值
         for(int i = 0; i < 4; i++)
         {
@@ -159,13 +164,12 @@ void Chassis_Ctrl_Remote(void)
         if(chassis_cmd.mode == SPIN)
         {
             Chassis_Enable();
-            //chassis_cmd.omega_z = Chassis_Get_Omega(chassis_m3508);
+            chassis_cmd.omega_z = 0.3f;
         }
 
         else if(chassis_cmd.mode == FOLLOW)
         {
             Chassis_Enable();
-               
         }
         else if(chassis_cmd.mode == STOP_C)
         {
