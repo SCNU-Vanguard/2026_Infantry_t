@@ -9,18 +9,20 @@
 ******************************************************************************
 */
 #include "chassis.h"
+#include "vofa.h"
 
 DJI_motor_instance_t *chassis_m3508[4];
 Chassis_CmdTypedef chassis_cmd;
 float target_speed[4] = {0};//底盘解算出的电机目标值
+float VOFA_speed[4];//vofa调参用的
 
 /*TEST*/
 float test_omega;
 
 //注意堆栈大小，使用同一个结构体，堆栈太小到会导致配置错误
 PID_t chassis_3508_speed_pid = {
-    .kp = 20.0f,
-    .ki = 0.1f,
+    .kp = 20.005f,
+    .ki = 0.105f,
     .kd = 0.0f,
     .output_limit = 5000.0f, 
     .integral_limit = 1000.0f,
@@ -89,10 +91,10 @@ void Mecanum_Solve(Chassis_CmdTypedef *cmd, float *ret)
 	*/
   float omega_z = cmd->omega_z + cmd->omega_follow;
 
-  ret[0] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 1.414f) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-  ret[1] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 1.414f) - (cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-  ret[2] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 1.414f) - (cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-  ret[3] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 1.414f) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+  ret[0] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+  ret[1] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+  ret[2] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+  ret[3] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
 }
 
 /*
@@ -157,6 +159,18 @@ void Chassis_Ctrl_Remote(void)
         //设目标值
         for(int i = 0; i < 4; i++)
         {
+			
+			//////////////////////////////////////调试用
+//			if(target_speed[i] < -10)
+//			{
+//				target_speed[i] = -200;
+//			}
+//			else if(target_speed[i] > 10)
+//			{
+//				target_speed[i] = 200;
+//			}
+			//////////////////////////////////////////////////
+			
             DJI_Motor_Set_Ref(chassis_m3508[i], target_speed[i]);
         }
 
@@ -181,4 +195,7 @@ void Chassis_Ctrl_Remote(void)
         }
 
         DJI_Motor_Control();//电机pid计算及发送控制报文 , 与波弹盘拆解 
+		
+		/////////////////////////////////////////vofa调参用的代码
+		VOFA_JustFloat(VOFA_speed, 4);
 }

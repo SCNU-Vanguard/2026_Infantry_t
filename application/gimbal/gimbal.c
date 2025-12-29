@@ -11,12 +11,11 @@
 
 #include "gimbal.h"
 
-
 Gimbal_CmdTypedef gimbal_cmd;
-//2*4310 + 6220 + 1*2006
+//2*4310 + 6006 + 1*2006
 DM_motor_t *DM_4310_pitch_head;//云台头，imu串级控制
 DM_motor_t *DM_4310_pitch_neck;//云台脖子，单位置环
-DM_motor_t *DM_6220_yaw;//云台yaw电机，imu串级控制
+DM_motor_t *DM_6006_yaw;//云台yaw电机，imu串级控制
 
 
 
@@ -89,7 +88,7 @@ PID_t speed_pid_pitch_neck = {
 * @brief 达妙电机配置初始化结构体
 */
 //DM_MOTOR_ABSOLUTE
-motor_init_config_t dm_6220_yaw = {
+motor_init_config_t dm_6006_yaw = {
     .controller_param_init_config = {
         .angle_PID = &angle_pid_yaw,
         .speed_PID = &speed_pid_yaw,
@@ -230,14 +229,14 @@ void Gimbal_Init(void)
     #else
         p_h_4310.controller_param_init_config.other_angle_feedback_ptr = &INS.Pitch;
     #endif
-	  dm_6220_yaw.controller_param_init_config.other_angle_feedback_ptr = &INS.Yaw;//使用imu的yaw角度作为yaw电机的角度反馈
-    dm_6220_yaw.controller_param_init_config.speed_feedforward_ptr = &chassis_cmd.omega_follow;//添加小陀螺转速补偿
+	  dm_6006_yaw.controller_param_init_config.other_angle_feedback_ptr = &INS.Yaw;//使用imu的yaw角度作为yaw电机的角度反馈
+    dm_6006_yaw.controller_param_init_config.speed_feedforward_ptr = &chassis_cmd.omega_follow;//添加小陀螺转速补偿
 
     DM_4310_pitch_head = DM_Motor_Init(&p_h_4310);
 
     DM_4310_pitch_neck = DM_Motor_Init(&p_n_4310);
 
-    DM_6220_yaw = DM_Motor_Init(&dm_6220_yaw);
+    DM_6006_yaw = DM_Motor_Init(&dm_6006_yaw);
 
 }
 
@@ -245,27 +244,27 @@ void Gimbal_Enable(void)
 {
     DM_Motor_ENABLE(DM_4310_pitch_head);
     DM_Motor_ENABLE(DM_4310_pitch_neck);
-    DM_Motor_ENABLE(DM_6220_yaw);
+    DM_Motor_ENABLE(DM_6006_yaw);
 }
 
 void Gimbal_Disable(void)
 {
     DM_Motor_DISABLE(DM_4310_pitch_head);
     DM_Motor_DISABLE(DM_4310_pitch_neck);
-    DM_Motor_DISABLE(DM_6220_yaw);
+    DM_Motor_DISABLE(DM_6006_yaw);
 }
 
 void Gimbal_Stop(void)
 {
     DM_Motor_Stop(DM_4310_pitch_head);
     DM_Motor_Stop(DM_4310_pitch_neck);
-    DM_Motor_Stop(DM_6220_yaw);
+    DM_Motor_Stop(DM_6006_yaw);
 }
 
 void Gimbal_Control_Remote(void)
 {
 	//获取初始pitch角度
-    //temp_v_yaw = g_c->v_yaw + DM_6220_yaw.motor_controller.pid_ref;
+    //temp_v_yaw = g_c->v_yaw + DM_6006_yaw.motor_controller.pid_ref;
     while(INS_GET_PITCH() != 0 && gimbal_cmd.pitch_init == 0)//首次初始化 , 先确保imu初始化完成避免初始值错误
     {
         gimbal_cmd.pitch_init = INS_GET_PITCH();
@@ -279,7 +278,7 @@ void Gimbal_Control_Remote(void)
         Gimbal_Enable();
         DM_Motor_Start(DM_4310_pitch_head);
         DM_Motor_Start(DM_4310_pitch_neck);
-        DM_Motor_Start(DM_6220_yaw);
+        DM_Motor_Start(DM_6006_yaw);
         
         // temp_v_yaw = gimbal_cmd.v_yaw; //单速度环测试 ，注意gimbal_cmd.v_yaw的量级
         // if ( temp_v_yaw > YAW_MAX_SPEED )	
@@ -293,7 +292,7 @@ void Gimbal_Control_Remote(void)
         else if( temp_v_yaw < -PI )
                 temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
 																							
-        DM_Motor_SetTar(DM_6220_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+        DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
 			
 		/*p_head*/	
         temp_v_pitch_head = gimbal_cmd.pitch_init;
@@ -309,8 +308,16 @@ void Gimbal_Control_Remote(void)
 
     else if(gimbal_cmd.ctrl_mode == CTRL_HEAD)
     {
+		temp_v_yaw += gimbal_cmd.v_yaw;
+        if ( temp_v_yaw > PI )
+                temp_v_yaw -= 2 * PI;
+        else if( temp_v_yaw < -PI )
+                temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
+																							
+        DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+		
 			//
-      temp_v_pitch_head += gimbal_cmd.v_pitch_head;
+		temp_v_pitch_head += gimbal_cmd.v_pitch_head;
         USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
         DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
             
@@ -328,13 +335,13 @@ void Gimbal_Control_Remote(void)
 			 Gimbal_Stop();
 			 Gimbal_Disable();
 			 //TODU:优化DM_motor
-			 DM_6220_yaw->motor_controller.speed_PID->output = 0;
-       DM_6220_yaw->motor_controller.angle_PID->output = 0;
+			 DM_6006_yaw->motor_controller.speed_PID->output = 0;
+       DM_6006_yaw->motor_controller.angle_PID->output = 0;
      }
 
     //全部电机计算
     DM_Motor_Control();
 		 
-		yaw_speed_measure = DM_6220_yaw->motor_controller.speed_PID->measure;
-		yaw_speed_target = DM_6220_yaw->motor_controller.speed_PID->target;
+		yaw_speed_measure = DM_6006_yaw->motor_controller.speed_PID->measure;
+		yaw_speed_target = DM_6006_yaw->motor_controller.speed_PID->target;
 }

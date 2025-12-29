@@ -27,12 +27,12 @@ bmi088_init_config_t bmi088_init_h7 = {
         .integral_limit = 200.0f,
         .output_limit = 2000.0f,
     },
-    .heat_pwm_config = {
-        .htim = &htim3,
-        .channel = TIM_CHANNEL_4,
-        .dutyratio = 0,
-        .period = 5000 - 1,
-    },
+//    .heat_pwm_config = {
+//        .htim = &htim3,
+//        .channel = TIM_CHANNEL_4,
+//        .dutyratio = 0,
+//        .period = 5000 - 1,
+//    },
 
     .spi_acc_config = {
         .GPIOx = GPIOC,

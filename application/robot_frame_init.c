@@ -60,7 +60,7 @@ static void Frame_Device_Init(void)
 
     rc_ctl = Remote_Control_Init(&huart5);//遥控器数据
 
-    //VOFA_Register(&huart7);
+    VOFA_Register(&huart7);
 
     Chassis_Init();
 

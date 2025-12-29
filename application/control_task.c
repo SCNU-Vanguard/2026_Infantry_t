@@ -2,6 +2,9 @@
 
 
 #define CONTROL_TASK_PERIOD 1 // ms
+#define ANGLE_REFERENCE -2.75885892  //底盘坐标系转云台坐标系角度参考值
+#define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
+#define YAW_DEADBAND 3 //yaw轴死区值
 osThreadId_t control_task_handle;
 uint32_t control_task_diff;//任务周期
 
@@ -40,6 +43,11 @@ void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_
 	else if ( bias_tmp < 0 )
 		bias_tmp += 2 * PI;
 	
+	if(bias_tmp < BIAS_DEADBAND)//死区
+	{
+		bias_tmp = 0;
+	}
+	
 	float vx_tmp = cmd -> vx * cosf (bias_tmp) - cmd -> vy * sinf (bias_tmp);
 	float vy_tmp = cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
 	cmd -> vx = vx_tmp;
@@ -53,6 +61,10 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	chs -> vx = (float) rc_ctl -> rc . rocker_l1 * REMOTE_X_SEN ;
 	chs -> vy = (float) rc_ctl -> rc . rocker_l_ * REMOTE_Y_SEN ;
 
+	if(rc_ctl -> rc . rocker_r_ < YAW_DEADBAND && rc_ctl -> rc . rocker_r_ > -YAW_DEADBAND)//yaw轴死区
+	{
+		rc_ctl -> rc . rocker_r_ = 0;
+	}
 	gim -> v_yaw = (float) - rc_ctl -> rc . rocker_r_ * REMOTE_YAW_SEN;
 
 	
@@ -100,7 +112,7 @@ static void Control_Task(void *argument)
     {
         
         Remote_Ctrl (&gimbal_cmd, &chassis_cmd);
-			  Chassis_Cmd_Trans(&chassis_cmd, -PI, DM_6220_yaw -> receive_data.position);//底盘坐标系转云台坐标系
+		//Chassis_Cmd_Trans(&chassis_cmd, ANGLE_REFERENCE, DM_6006_yaw -> receive_data.position);//底盘坐标系转云台坐标系
 
         control_task_diff = osKernelGetTickCount() - time;
         time = osKernelGetTickCount();

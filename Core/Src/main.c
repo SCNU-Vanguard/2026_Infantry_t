@@ -120,7 +120,6 @@ int main(void)
   MX_FDCAN3_Init();
   MX_SPI2_Init();
   MX_SPI6_Init();
-  MX_TIM3_Init();
   MX_TIM12_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */

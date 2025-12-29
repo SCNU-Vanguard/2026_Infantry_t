@@ -80,7 +80,7 @@ typedef struct
 extern Gimbal_CmdTypedef gimbal_cmd;
 extern DM_motor_t *DM_4310_pitch_head;
 extern DM_motor_t *DM_4310_pitch_neck;
-extern DM_motor_t *DM_6220_yaw;
+extern DM_motor_t *DM_6006_yaw;
 
 /**/
 void Gimbal_Init(void);
