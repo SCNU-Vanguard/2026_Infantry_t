@@ -446,8 +446,6 @@ void DJI_Motor_Control(void)
                     pid_fab = receive_data->speed_aps;
                 }
             }
-			////////////////////////////////////////////////////////////////调pid用的
-			VOFA_speed[i] = pid_fab;
             // 更新pid_ref进入下一个环
             pid_ref = PID_Increment(motor_controller->speed_PID,
                                     pid_fab,

@@ -145,6 +145,4 @@ uint8_t BMI088_Read_All(bmi088_instance_t *bmi088, bmi088_data_t *data_store);
 
 uint8_t BMI088_Acquire_IT_Status(bmi088_instance_t *bmi088);
 
-void BMI088_Temp_Control(bmi088_instance_t *bmi088);
-
 #endif /* __BMI088_H__ */

@@ -2,7 +2,7 @@
 
 
 #define CONTROL_TASK_PERIOD 1 // ms
-#define ANGLE_REFERENCE -2.75885892  //底盘坐标系转云台坐标系角度参考值
+#define ANGLE_REFERENCE -2.77381539  //底盘坐标系转云台坐标系角度参考值
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
 #define YAW_DEADBAND 3 //yaw轴死区值
 osThreadId_t control_task_handle;
@@ -69,36 +69,41 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 
 	
 	//模式处理
-	if( rc_ctl -> rc . switch_left == 1 )
+	if( rc_ctl -> rc . switch_left == 1 )//暂时用于测试
 	{
-			chs -> mode = SPIN;
-			//chs -> omega_z = 0.5 ;
+//		chs -> mode = SPIN;
+		//chs -> omega_z = 0.5 ;
+		chs -> mode = STOP_C;
+		shoot_mode = SHOOT_MODE_FIRE;
+		target_shoot_frequence = rc_ctl->rc . dial / 660.0 * 300.0;
 	}
 	else if( rc_ctl -> rc . switch_left == 3 )
 	{
-			chs -> mode = FOLLOW;
-			chs -> omega_z = rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN ;
+		chs -> mode = FOLLOW;
+		chs -> omega_z = -(rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN) ;
+		shoot_mode = SHOOT_MODE_STOP;
 	}
 	else if( rc_ctl -> rc . switch_left == 2 ||  rc_ctl -> rc . switch_left == 0)
 	{
-			chs -> mode = STOP_C;
+		chs -> mode = STOP_C;
+		shoot_mode = SHOOT_MODE_STOP;
 	}
 	
 
 	//云台控制模式处理
 	if( rc_ctl -> rc . switch_right == 1 )
 	{
-			gim -> ctrl_mode = CTRL_HEAD; //动pitch_head,锁neck
-			gim -> v_pitch_head = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN ;//
+		gim -> ctrl_mode = CTRL_HEAD; //动pitch_head,锁neck
+		gim -> v_pitch_head = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN ;//
 	}
 	else if( rc_ctl -> rc . switch_right == 3 )
 	{
-			gim -> ctrl_mode = CTRL_NECK; //动pitch_neck,head水平
-			gim -> v_pitch_neck = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN;//对应加减
+		gim -> ctrl_mode = CTRL_NECK; //动pitch_neck,head水平
+		gim -> v_pitch_neck = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN;//对应加减
 	}
 	else if( rc_ctl -> rc . switch_right == 2 || rc_ctl -> rc . switch_right == 0)
 	{
-			gim -> ctrl_mode = STOP_GIMBAL;
+		gim -> ctrl_mode = STOP_GIMBAL;
 	}
 
 }

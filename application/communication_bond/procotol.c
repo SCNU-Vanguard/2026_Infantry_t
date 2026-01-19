@@ -16,6 +16,8 @@
 
 #include "vofa.h"
 #include "bmi088.h"
+#include "chassis.h"
+#include "gimbal.h"
 
 extern bmi088_data_t imu_data;
 
@@ -31,11 +33,34 @@ void VOFA_Display_IMU(void)
 
     vofa_data_view[6] = imu_data.temperature;
 
-    VOFA_Send_Data(vofa_data_view, 7);
-    // VOFA_JustFloat(vofa_data_view, 7);
+    //VOFA_Send_Data(vofa_data_view, 7);
+    VOFA_JustFloat(vofa_data_view, 7);
 }
 
 void VOFA_Display_Pitch(void)
 {
 
 }
+
+void VOFA_Display_Yaw(void)
+{
+	vofa_data_view[0] = INS.Yaw;
+	vofa_data_view[1] = yaw_speed_target;
+	vofa_data_view[2] = yaw_speed_measure;
+	
+	VOFA_JustFloat(vofa_data_view, 3);
+}
+
+void VOFA_Display_Speed(void)
+{
+	vofa_data_view[0] = chassis_m3508[0]->measure.speed;
+	vofa_data_view[1] = chassis_m3508[1]->measure.speed;
+	vofa_data_view[2] = chassis_m3508[2]->measure.speed;
+	vofa_data_view[3] = chassis_m3508[3]->measure.speed;
+	vofa_data_view[0] *= -1;
+	vofa_data_view[3] *= -1;
+	
+	vofa_data_view[4] = omega_z;
+	
+	VOFA_JustFloat(vofa_data_view, 5);
+}	

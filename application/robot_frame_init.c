@@ -65,7 +65,8 @@ static void Frame_Device_Init(void)
     Chassis_Init();
 
     Gimbal_Init();
-    //Shoot_Init();
+	
+    Shoot_Init();
 }
 
 /*
@@ -84,9 +85,9 @@ static void Frame_Task_Init(void)
 
     Gimbal_Task_Init();
 
-    //Shoot_Task_Init();
+    Shoot_Task_Init();
 
-    //Procotol_Task_Init();
+    Procotol_Task_Init();
 
     //VPC_Task_Init();
 }

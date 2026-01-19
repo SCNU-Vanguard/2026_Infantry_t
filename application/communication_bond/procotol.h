@@ -26,5 +26,7 @@ typedef struct
 
 void VOFA_Display_IMU(void);
 void VOFA_Display_Pitch(void);
+void VOFA_Display_Yaw(void);
+void VOFA_Display_Speed(void);
 
 #endif /* __PROCOTOL_H__ */

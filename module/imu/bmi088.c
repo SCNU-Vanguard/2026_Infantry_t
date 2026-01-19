@@ -20,19 +20,21 @@
 #define BMI088_Cali 0
 
 bmi088_init_config_t bmi088_init_h7 = {
-    .heat_pid_config = {
-        .kp = 80.0f,
-        .ki = 0.5f,
-        .kd = 0,
-        .integral_limit = 200.0f,
-        .output_limit = 2000.0f,
-    },
-//    .heat_pwm_config = {
-//        .htim = &htim3,
-//        .channel = TIM_CHANNEL_4,
-//        .dutyratio = 0,
-//        .period = 5000 - 1,
-//    },
+	.heat_pid_config = {
+		.kp = 0.01f,
+		.ki = 0.0005f,
+		.kd = 0,
+		.dead_band = 0.0f,
+		.integral_limit = 0.025f,
+		.output_limit = 0.025f,
+	},
+
+	.heat_pwm_config = {
+		.htim = &htim3,
+		.channel = TIM_CHANNEL_4,
+		.dutyratio = 0.0f,
+		.period = 20000 - 1,
+	},
 
     .spi_acc_config = {
         .GPIOx = GPIOC,
@@ -458,51 +460,6 @@ static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
 
 // -------------------------以上为私有函数,用于初始化BMI088acc和gyro的硬件和配置--------------------------------//
 
-/**
- * @brief          控制bmi088的温度
- * @param[in]      temp:bmi088的温度
- * @retval         none
- */
-void BMI088_Temp_Control(bmi088_instance_t *bmi088)
-{
-    static uint8_t temp_constant_time = 0;
-    static uint8_t first_temperate = 0; // 第一次达到设定温度
-    static float target_temp = 0;
-    target_temp = bmi088->ambient_temperature + 10; // 推荐比环境温度高10度
-    if (target_temp > 45.0f)
-        target_temp = 45.0f; // 限制在45度以内
-
-    if (first_temperate)
-    {
-        PID_Position(bmi088->heat_pid, target_temp, bmi088->temperature);
-        // 限制在正数范围
-        if (bmi088->heat_pid->output < 0.0f)
-        {
-            bmi088->heat_pid->output = 0.0f;
-        }
-        if (bmi088->heat_pid->i_out < 0)
-        {
-            bmi088->heat_pid->i_out = 0;
-        }
-        PWM_Set_DutyRatio(bmi088->heat_pwm, bmi088->heat_pid->output);
-    }
-    else
-    {
-        // 在没有达到设置的温度-4，一直最大功率加热
-        PWM_Set_DutyRatio(bmi088->heat_pwm, 0.95f);
-        if (bmi088->temperature > target_temp - 4)
-        {
-            temp_constant_time++;
-            if (temp_constant_time > 200)
-            {
-                // 达到设置温度，设置积分项，加速收敛
-                first_temperate = 1;
-                bmi088->heat_pid->i_out = 0.05f;
-            }
-        }
-    }
-}
-
 // -------------------------以下为私有函数,private用于IT模式下的中断处理---------------------------------//
 
 static void BMI088_Accel_SPI_Finish_Callback(SPI_instance_t *spi)
@@ -532,7 +489,6 @@ static void BMI088_Accel_SPI_Finish_Callback(SPI_instance_t *spi)
         {
             bmi088->ambient_temperature = bmi088->temperature;
         }
-        BMI088_Temp_Control(bmi088);
         callback_time = 0;
     }
     callback_time++;

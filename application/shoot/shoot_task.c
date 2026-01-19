@@ -55,6 +55,7 @@ static void Shoot_Task( void *argument )
 
     for( ; ; )
     {
+		Shoot_Control_Remote();
 
         shoot_task_diff = osKernelGetTickCount( ) - time;
         time = osKernelGetTickCount( );

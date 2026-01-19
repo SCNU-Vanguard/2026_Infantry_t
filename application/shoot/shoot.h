@@ -31,11 +31,14 @@ typedef struct
 
 extern uint8_t shoot_mode;
 extern uint8_t shoot_mode_last;
+extern uint8_t shoot_mode;
+extern uint16_t target_shoot_frequence;
 
 void Shoot_Init(void);
 void Shoot_Enable(void);
 void Shoot_Stop(void);
 void Get_Shoot_Mode(void);
 void Shoot_State_Machine(void);
+void Shoot_Control_Remote(void);
 
 #endif /* __SHOOT_H__ */

@@ -10,6 +10,7 @@
 
 #include "chassis.h"
 #include "gimbal.h"
+#include "shoot.h"
 #include "robot_frame_config.h"
 #include "robot_frame_init.h"
 

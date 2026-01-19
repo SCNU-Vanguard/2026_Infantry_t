@@ -37,6 +37,15 @@ PID_t angle_pid_yaw = {
 	.dead_band = 0.0f,
 };
 
+//PID_t angle_pid_yaw = {
+//	.kp = -1.5f,        //注意pid输出方向
+//	.ki = 0.0f,
+//	.kd = -10.0f,
+//	.integral_limit = 0.0f,
+//	.output_limit = 2.0f,//3rad/s
+//	.dead_band = 0.0f,
+//};
+
 PID_t speed_pid_yaw = {
 	.kp = 5.0f,
 	.ki = 0.01f,
@@ -45,7 +54,6 @@ PID_t speed_pid_yaw = {
 	.output_limit = 50.0f,
 	.dead_band = 0.0f,
 };
-
 
 PID_t angle_pid_pitch_head = {
 	.kp = 10.0f,	//注意输出方向
@@ -99,7 +107,7 @@ motor_init_config_t dm_6006_yaw = {
         .other_speed_feedback_ptr = NULL,
 
         .angle_feedforward_ptr = NULL,
-        .speed_feedforward_ptr = NULL,
+        .speed_feedforward_ptr = NULL,///////////////////////////////////////////////////////////////////疑似没给前馈
         .current_feedforward_ptr = NULL,
         .torque_feedforward_ptr = NULL,
 
@@ -120,7 +128,7 @@ motor_init_config_t dm_6006_yaw = {
         .feedforward_flag = SPEED_FEEDFORWARD,//添加小陀螺转速补偿
     },
 
-    .motor_type = DM6220,
+    .motor_type = DM6006,
 
     .can_init_config = {
         .can_handle = &hfdcan1,
@@ -327,21 +335,21 @@ void Gimbal_Control_Remote(void)
 		
      else if (gimbal_cmd.ctrl_mode == STOP_GIMBAL)
      {
-			 //temp_v_yaw = 0;
-			 temp_v_pitch_head = gimbal_cmd.pitch_init + 0.005f;
-			 temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
-			 //维持当前角度但不作PID计算，pid_ref清零，不计算
-			 
-			 Gimbal_Stop();
-			 Gimbal_Disable();
-			 //TODU:优化DM_motor
-			 DM_6006_yaw->motor_controller.speed_PID->output = 0;
-       DM_6006_yaw->motor_controller.angle_PID->output = 0;
+		//temp_v_yaw = 0;
+		temp_v_pitch_head = gimbal_cmd.pitch_init + 0.005f;
+		temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
+		//维持当前角度但不作PID计算，pid_ref清零，不计算
+		
+		Gimbal_Stop();
+		Gimbal_Disable();
+		//TODU:优化DM_motor
+		DM_6006_yaw->motor_controller.speed_PID->output = 0;
+		DM_6006_yaw->motor_controller.angle_PID->output = 0;
      }
 
     //全部电机计算
     DM_Motor_Control();
 		 
-		yaw_speed_measure = DM_6006_yaw->motor_controller.speed_PID->measure;
-		yaw_speed_target = DM_6006_yaw->motor_controller.speed_PID->target;
+	yaw_speed_measure = DM_6006_yaw->motor_controller.speed_PID->measure;
+	yaw_speed_target = DM_6006_yaw->motor_controller.speed_PID->target;
 }

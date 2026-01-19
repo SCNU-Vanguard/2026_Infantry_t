@@ -23,8 +23,6 @@
 #define CURRENT_SMOOTH_COEF 0.9f     // 必须大于0.9
 #define ECD_ANGLE_COEF_DJI 0.043945f // (360/8192),将编码器值转化为角度制
 
-extern float VOFA_speed[4];
-
 typedef enum
 {
     ORIGIN = 0,

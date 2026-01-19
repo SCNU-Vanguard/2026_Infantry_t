@@ -81,6 +81,8 @@ extern Gimbal_CmdTypedef gimbal_cmd;
 extern DM_motor_t *DM_4310_pitch_head;
 extern DM_motor_t *DM_4310_pitch_neck;
 extern DM_motor_t *DM_6006_yaw;
+extern float yaw_speed_measure;
+extern float yaw_speed_target;
 
 /**/
 void Gimbal_Init(void);

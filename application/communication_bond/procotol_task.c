@@ -52,8 +52,10 @@ static void Procotol_Task( void *argument )
 
     for( ; ; )
     {
-//        VOFA_Display_IMU();
-				VOFA_Display_Pitch();
+        //VOFA_Display_IMU();
+		//VOFA_Display_Pitch();
+		VOFA_Display_Yaw();
+		//VOFA_Display_Speed();
 					
         procotol_task_diff = osKernelGetTickCount( ) - time;
         time = osKernelGetTickCount( );

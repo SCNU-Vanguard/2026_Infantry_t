@@ -16,13 +16,14 @@
 #include "chassis.h"
 
 uint16_t target_shoot_frequence = 0;
+uint8_t shoot_mode = 0;
 
 PID_t chassis_2006_speed_pid = {
-    .kp = 1.0f,
-    .ki = 0.0f,
+    .kp = 30.0f,
+    .ki = 3.0f,
     .kd = 0.0f,
-    .output_limit = 10000.0f,
-    .integral_limit = 10000.0f,
+    .output_limit = 9000.0f,
+    .integral_limit = 9000.0f,
     .dead_band = 0.0f,
 };
 
@@ -47,7 +48,7 @@ motor_init_config_t chassis_2006_init = {
         .outer_loop_type = SPEED_LOOP,
         .close_loop_type = SPEED_LOOP,
 
-        .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
+        .motor_reverse_flag = MOTOR_DIRECTION_REVERSE,
         .feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
 
         .angle_feedback_source = MOTOR_FEED,
@@ -59,7 +60,7 @@ motor_init_config_t chassis_2006_init = {
     .motor_type = M2006,
 
     .can_init_config = {
-        .can_handle = &hfdcan2,//云台can2
+        .can_handle = &hfdcan3,//云台can2
         .tx_id = 0x05,
         .rx_id = 0x05,
     },
@@ -88,4 +89,29 @@ void Shoot_State_Machine(void)
 {
     static uint16_t init_count = 0;
 
+}
+
+void Shoot_Control_Remote(void)
+{
+	switch(shoot_mode)
+	{
+		case SHOOT_MODE_STOP:
+		{
+			Shoot_Stop();
+			break;
+		}
+		case SHOOT_MODE_FIRE:
+		{
+//			target_shoot_frequence = 300;
+			Shoot_Enable();
+			DJI_Motor_Set_Ref(chassis_shoot_motor, target_shoot_frequence);
+			break;
+		}
+		default:
+		{
+			Shoot_Stop();
+			break;
+		}
+	}
+	DJI_Motor_Control();
 }
