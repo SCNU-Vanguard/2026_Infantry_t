@@ -28,28 +28,39 @@ float temp_v_pitch_head;
 float yaw_speed_target = 0;
 float yaw_speed_measure = 0;
 
-PID_t angle_pid_yaw = {
-	.kp = -1.5f,        //注意pid输出方向
-	.ki = 0.0f,
-	.kd = -100,
-	.integral_limit = 0.0f,
-	.output_limit = 2.0f,//3rad/s
-	.dead_band = 0.0f,
-};
-
+//////////////////////////////////////////////////缩头乌龟yaw轴pid
 //PID_t angle_pid_yaw = {
-//	.kp = -1.5f,        //注意pid输出方向
+//	.kp = -2.5f,        //注意pid输出方向
 //	.ki = 0.0f,
-//	.kd = -10.0f,
+//	.kd = -165,
 //	.integral_limit = 0.0f,
 //	.output_limit = 2.0f,//3rad/s
 //	.dead_band = 0.0f,
 //};
 
+//PID_t speed_pid_yaw = {
+//	.kp = 2.0f,
+//	.ki = 0.003f,
+//	.kd = 8.0f,
+//	.integral_limit = 100.0f,
+//	.output_limit = 50.0f,
+//	.dead_band = 0.0f,
+//};
+
+//////////////////////////////////////////////////探出鬼头yaw轴pid
+PID_t angle_pid_yaw = {
+	.kp = -2.5f,        //注意pid输出方向
+	.ki = 0.0f,
+	.kd = -165,
+	.integral_limit = 0.0f,
+	.output_limit = 2.0f,//3rad/s
+	.dead_band = 0.0f,
+};
+
 PID_t speed_pid_yaw = {
-	.kp = 5.0f,
-	.ki = 0.01f,
-	.kd = 15.0f,
+	.kp = 3.5f,
+	.ki = 0.003f,
+	.kd = 8.0f,
 	.integral_limit = 100.0f,
 	.output_limit = 50.0f,
 	.dead_band = 0.0f,

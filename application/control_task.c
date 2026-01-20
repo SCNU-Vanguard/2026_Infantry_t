@@ -2,7 +2,7 @@
 
 
 #define CONTROL_TASK_PERIOD 1 // ms
-#define ANGLE_REFERENCE -2.77381539  //底盘坐标系转云台坐标系角度参考值
+#define ANGLE_REFERENCE 0.587667465  //底盘坐标系转云台坐标系角度参考值
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
 #define YAW_DEADBAND 3 //yaw轴死区值
 osThreadId_t control_task_handle;

@@ -21,6 +21,7 @@
 #include "procotol.h"
 
 #include "message_center.h"
+#include "usbd_cdc_if.h"
 
 #define PROCOTOL_TASK_PERIOD 10 // ms
 
@@ -56,6 +57,8 @@ static void Procotol_Task( void *argument )
 		//VOFA_Display_Pitch();
 		VOFA_Display_Yaw();
 		//VOFA_Display_Speed();
+		
+//		CDC_Transmit_HS((uint8_t *)"Hello\r", 6);//≤‚ ‘–Èƒ‚¥Æø⁄”√
 					
         procotol_task_diff = osKernelGetTickCount( ) - time;
         time = osKernelGetTickCount( );

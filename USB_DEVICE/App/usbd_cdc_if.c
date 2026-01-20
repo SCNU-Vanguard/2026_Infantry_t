@@ -277,6 +277,13 @@ static int8_t CDC_Receive_HS(uint8_t* Buf, uint32_t *Len)
   }
   memcpy(&cdc_rx_cache[cdc_rx_len],Buf,*Len);
   cdc_rx_len += *Len;
+	
+	/////////////////////////////////////////////////////////虚拟串口调试用
+//	char myStr[64] = {0};                                                     // 定义一个数组，用于存放要输出的字符串
+//    memcpy(myStr, (char *)Buf, *Len); // 格式化字符串
+//    CDC_Transmit_HS((uint8_t *)myStr, strlen(myStr));                         // 发送
+//    memset(Buf, 0, 64);                                                       // 处理完数据，清0接收缓存;
+
 
   
   /* 重新使能USB，CDC，等待下一个数据包接收 */
