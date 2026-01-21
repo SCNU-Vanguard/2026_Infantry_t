@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "robot_frame_config.h"
 #include "message_center.h"
@@ -39,15 +40,22 @@ typedef enum
 
 typedef enum
 {
-	CTRL_HEAD = 1,
-	CTRL_NECK = 3,//启动云台控制
-	STOP_GIMBAL = 2,//停止云台控制
+//	CTRL_HEAD = 1,
+	STAND_NECK = 3,//启动云台控制
+	SIT_NECK = 2,//停止云台控制
 } gimbal_ctrl_e;//云台控制
+
+typedef enum
+{
+	GIMBAL_DISABLE = 0,
+	GIMBAL_ENABLE = 1,
+} gimbal_status_e;//云台使能
 
 typedef struct
 {
 	shooter_strategy_e shooter;
 	gimbal_ctrl_e ctrl_mode;
+	gimbal_status_e status;
 
 	uint8_t friction_state;//摩擦轮状态:0-关闭，1-开启
 	uint8_t shoot_advice;
@@ -83,6 +91,7 @@ extern DM_motor_t *DM_4310_pitch_neck;
 extern DM_motor_t *DM_6006_yaw;
 extern float yaw_speed_measure;
 extern float yaw_speed_target;
+extern float yaw_to_mid;
 
 /**/
 void Gimbal_Init(void);

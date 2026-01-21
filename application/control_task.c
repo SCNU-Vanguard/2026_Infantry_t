@@ -2,7 +2,7 @@
 
 
 #define CONTROL_TASK_PERIOD 1 // ms
-#define ANGLE_REFERENCE 0.587667465  //底盘坐标系转云台坐标系角度参考值
+#define ANGLE_REFERENCE -3.0359385  //底盘坐标系转云台坐标系角度参考值
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
 #define YAW_DEADBAND 3 //yaw轴死区值
 osThreadId_t control_task_handle;
@@ -48,10 +48,12 @@ void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_
 		bias_tmp = 0;
 	}
 	
-	float vx_tmp = cmd -> vx * cosf (bias_tmp) - cmd -> vy * sinf (bias_tmp);
-	float vy_tmp = cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
-	cmd -> vx = vx_tmp;
-	cmd -> vy = vy_tmp;
+	yaw_to_mid = cosf (bias_tmp);
+	
+//	float vx_tmp = cmd -> vx * cosf (bias_tmp) - cmd -> vy * sinf (bias_tmp);
+//	float vy_tmp = cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
+//	cmd -> vx = vx_tmp;
+//	cmd -> vy = vy_tmp;
 }
 
 
@@ -81,11 +83,13 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	{
 		chs -> mode = FOLLOW;
 		chs -> omega_z = -(rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN) ;
+		gim -> status = GIMBAL_ENABLE;
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 	else if( rc_ctl -> rc . switch_left == 2 ||  rc_ctl -> rc . switch_left == 0)
 	{
 		chs -> mode = STOP_C;
+		gim -> status = GIMBAL_DISABLE;
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 	
@@ -93,17 +97,18 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	//云台控制模式处理
 	if( rc_ctl -> rc . switch_right == 1 )
 	{
-		gim -> ctrl_mode = CTRL_HEAD; //动pitch_head,锁neck
-		gim -> v_pitch_head = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN ;//
+//		gim -> ctrl_mode = CTRL_HEAD; //动pitch_head,锁neck
+//		gim -> v_pitch_head = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN ;//
 	}
 	else if( rc_ctl -> rc . switch_right == 3 )
 	{
-		gim -> ctrl_mode = CTRL_NECK; //动pitch_neck,head水平
-		gim -> v_pitch_neck = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN;//对应加减
+		gim -> ctrl_mode = STAND_NECK; //动pitch_neck,head水平
+		gim -> v_pitch_head = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN ;//
 	}
 	else if( rc_ctl -> rc . switch_right == 2 || rc_ctl -> rc . switch_right == 0)
 	{
-		gim -> ctrl_mode = STOP_GIMBAL;
+		gim -> ctrl_mode = SIT_NECK;
+//		gim -> v_pitch_neck = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN;//对应加减
 	}
 
 }
@@ -117,7 +122,7 @@ static void Control_Task(void *argument)
     {
         
         Remote_Ctrl (&gimbal_cmd, &chassis_cmd);
-		//Chassis_Cmd_Trans(&chassis_cmd, ANGLE_REFERENCE, DM_6006_yaw -> receive_data.position);//底盘坐标系转云台坐标系
+		Chassis_Cmd_Trans(&chassis_cmd, ANGLE_REFERENCE, DM_6006_yaw -> receive_data.position);//底盘坐标系转云台坐标系
 
         control_task_diff = osKernelGetTickCount() - time;
         time = osKernelGetTickCount();
