@@ -75,7 +75,9 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	{
 //		chs -> mode = SPIN;
 		//chs -> omega_z = 0.5 ;
-		chs -> mode = STOP_C;
+		chs -> mode = FOLLOW;
+		chs -> omega_z = 0;
+		
 		shoot_mode = SHOOT_MODE_FIRE;
 		target_shoot_frequence = rc_ctl->rc . dial / 660.0 * 300.0;
 	}
@@ -83,13 +85,17 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	{
 		chs -> mode = FOLLOW;
 		chs -> omega_z = -(rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN) ;
+		
 		gim -> status = GIMBAL_ENABLE;
+		
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 	else if( rc_ctl -> rc . switch_left == 2 ||  rc_ctl -> rc . switch_left == 0)
 	{
 		chs -> mode = STOP_C;
+		
 		gim -> status = GIMBAL_DISABLE;
+		
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 	

@@ -51,14 +51,18 @@
 #define PITCH_NECK_MIN_ANGLE  -0.01f //rad , 对应缩头时的角度
 #define PITCH_NECK_MAX_ANGLE  -1.0f  //rad , 对应伸出头时的角度
 #define PITCH_NECK_MAX_SPEED  2.0f // rad/s
-#define PITCH_NECK_TRANSFORM_SPEED 0.0015 
+#define PITCH_NECK_TRANSFORM_SPEED 0.0018 //伸缩变换时使用的过渡增量
+#define PITCH_NECK_TRANSFORM_JUDGEMENT 0.02 //伸缩变换时使用的判断值
 
-#define PITCH_HEAD_MIN_ANGLE  0.1f //rad , 对应缩头时的角度
-#define PITCH_HEAD_MID_ANGLE  -0.1f //rad , 对应中间的角度
-#define PITCH_HEAD_MAX_ANGLE  -0.45f  //rad , 对应伸出头时的角度
+#define PITCH_HEAD_MIN_ANGLE  -0.1f //rad , 对应缩头时的角度
+#define PITCH_HEAD_MID_ANGLE  -0.3f //rad , 对应中间的角度
+#define PITCH_HEAD_MAX_ANGLE  -0.65f  //rad , 对应伸出头时的角度
 #define PITCH_HEAD_MAX_SPEED  0.001f // rad/s
-#define PITCH_HEAD_TRANSFORM_SPEED 0.0012
+#define PITCH_HEAD_TRANSFORM_SPEED 0.0012 //伸缩变换时使用的过渡增量
+#define PITCH_HEAD_TRANSFORM_JUDGEMENT 0.05 //伸缩变换时使用的判断值
+#define PITCH_HEAD_COEFFICIENT 1.5 //遥控器增量乘的系数
 
 #define YAW_MAX_SPEED 2.0f //rad/s
+#define YAW_COEFFICIENT 0.6 //遥控器增量乘的系数
 
 #endif /* __ROBOT_FRAME_CONFIG_H__ */

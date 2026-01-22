@@ -26,6 +26,8 @@
 #include "DM_motor.h"
 #include "rs485.h"
 #include "remote_control.h"
+#include "VPC.h"
+#include "Serial.h"
 
 #define GIMBAL_TASK_PERIOD 1 // ms
 
@@ -59,6 +61,12 @@ static void Gimbal_Task(void *argument)
     {
         //云台遥控器控制
         Gimbal_Control_Remote();
+		
+		Choose_VPC_Type();
+        VPC_UpdatePackets(); //接收准备发送的数据
+        //NV_Pack_And_Send_Data_ROS2(&nv_aim_packet_to_nuc); //导航数据包发送
+        VS_Pack_And_Send_Data_ROS2(&vs_aim_packet_to_nuc); //视觉数据包发送
+        // Pack_And_Send_Data_ROS2(&aim_packet_to_nuc);
 
         gimbal_task_diff = osKernelGetTickCount() - time;
         time = osKernelGetTickCount();
