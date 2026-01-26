@@ -25,7 +25,7 @@ typedef struct
 }__attribute__((packed))procotol_cmd_t;
 
 void VOFA_Display_IMU(void);
-void VOFA_Display_Pitch(void);
+void VOFA_Display_Pitch_Head(void);
 void VOFA_Display_Yaw(void);
 void VOFA_Display_Speed(void);
 

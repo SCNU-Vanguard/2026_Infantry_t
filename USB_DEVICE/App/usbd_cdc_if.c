@@ -278,15 +278,15 @@ static int8_t CDC_Receive_HS(uint8_t* Buf, uint32_t *Len)
   memcpy(&cdc_rx_cache[cdc_rx_len],Buf,*Len);
   cdc_rx_len += *Len;
 	
-	/////////////////////////////////////////////////////////ÐéÄâ´®¿Úµ÷ÊÔÓÃ
-//	char myStr[64] = {0};                                                     // ¶¨ÒåÒ»¸öÊý×é£¬ÓÃÓÚ´æ·ÅÒªÊä³öµÄ×Ö·û´®
-//    memcpy(myStr, (char *)Buf, *Len); // ¸ñÊ½»¯×Ö·û´®
-//    CDC_Transmit_HS((uint8_t *)myStr, strlen(myStr));                         // ·¢ËÍ
-//    memset(Buf, 0, 64);                                                       // ´¦ÀíÍêÊý¾Ý£¬Çå0½ÓÊÕ»º´æ;
+	/////////////////////////////////////////////////////////ï¿½ï¿½ï¿½â´®ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½
+//	char myStr[64] = {0};                                                     // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½é£¬ï¿½ï¿½ï¿½Ú´ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
+//    memcpy(myStr, (char *)Buf, *Len); // ï¿½ï¿½Ê½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
+//    CDC_Transmit_HS((uint8_t *)myStr, strlen(myStr));                         // ï¿½ï¿½ï¿½ï¿½
+//    memset(Buf, 0, 64);                                                       // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½;
 
 
   
-  /* ÖØÐÂÊ¹ÄÜUSB£¬CDC£¬µÈ´ýÏÂÒ»¸öÊý¾Ý°ü½ÓÊÕ */
+  /* ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½USBï¿½ï¿½CDCï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½ï¿½ï¿½ï¿½ï¿½ */
   USBD_CDC_SetRxBuffer(&hUsbDeviceHS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceHS);
   return (USBD_OK);

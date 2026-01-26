@@ -37,9 +37,13 @@ void VOFA_Display_IMU(void)
     VOFA_JustFloat(vofa_data_view, 7);
 }
 
-void VOFA_Display_Pitch(void)
+void VOFA_Display_Pitch_Head(void)
 {
-
+	vofa_data_view[0] = INS.Roll;
+	vofa_data_view[1] = pitch_head_target;
+	vofa_data_view[2] = pitch_head_measure;
+	
+	VOFA_JustFloat(vofa_data_view, 3);
 }
 
 void VOFA_Display_Yaw(void)

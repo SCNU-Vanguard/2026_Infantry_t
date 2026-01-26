@@ -119,6 +119,7 @@ typedef enum
 	DM4310,
 	DM8009P,
 	DM6006,
+	SNAIL,
 } motor_type_e;
 
 typedef enum

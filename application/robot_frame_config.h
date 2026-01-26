@@ -48,17 +48,19 @@
 #define REMOTE_PITCH_SEN 0.000002f
 
 /*云台相关参数*/    //注意大小问题
-#define PITCH_NECK_MIN_ANGLE  -0.01f //rad , 对应缩头时的角度
-#define PITCH_NECK_MAX_ANGLE  -1.0f  //rad , 对应伸出头时的角度
-#define PITCH_NECK_MAX_SPEED  2.0f // rad/s
+#define PITCH_NECK_MIN_ANGLE  -0.03f //rad , 对应缩头时发送的角度
+#define PITCH_NECK_MAX_ANGLE  -1.0f  //rad , 对应伸出头时发送的角度
+#define PITCH_NECK_ACTUAL_MIN_ANGLE  -0.0076f //rad , 对应缩头时返回的角度
+#define PITCH_NECK_ACTUAL_MAX_ANGLE  -0.25f  //rad , 对应伸出头时返回的角度
+#define PITCH_NECK_MAX_SPEED  1.5f // rad/s
 #define PITCH_NECK_TRANSFORM_SPEED 0.0018 //伸缩变换时使用的过渡增量
-#define PITCH_NECK_TRANSFORM_JUDGEMENT 0.02 //伸缩变换时使用的判断值
+#define PITCH_NECK_TRANSFORM_JUDGEMENT 0.03 //伸缩变换时使用的判断值
 
-#define PITCH_HEAD_MIN_ANGLE  -0.1f //rad , 对应缩头时的角度
-#define PITCH_HEAD_MID_ANGLE  -0.3f //rad , 对应中间的角度
-#define PITCH_HEAD_MAX_ANGLE  -0.65f  //rad , 对应伸出头时的角度
+#define PITCH_HEAD_MIN_ANGLE  0.24f //rad , 对应伸头时的最低角度
+#define PITCH_HEAD_MID_ANGLE  -0.02f //rad , 对应中间的角度
+#define PITCH_HEAD_MAX_ANGLE  -0.38f  //rad , 对应伸出头时的最高角度
 #define PITCH_HEAD_MAX_SPEED  0.001f // rad/s
-#define PITCH_HEAD_TRANSFORM_SPEED 0.0012 //伸缩变换时使用的过渡增量
+#define PITCH_HEAD_TRANSFORM_SPEED 0.0016 //伸缩变换时使用的过渡增量
 #define PITCH_HEAD_TRANSFORM_JUDGEMENT 0.05 //伸缩变换时使用的判断值
 #define PITCH_HEAD_COEFFICIENT 1.5 //遥控器增量乘的系数
 

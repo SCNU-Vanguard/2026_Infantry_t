@@ -54,9 +54,9 @@ static void Procotol_Task( void *argument )
     for( ; ; )
     {
         //VOFA_Display_IMU();
-		//VOFA_Display_Pitch();
-		VOFA_Display_Yaw();
-		//VOFA_Display_Speed();
+		//VOFA_Display_Pitch_Head();
+		//VOFA_Display_Yaw();
+		VOFA_Display_Speed();
 		
 //		CDC_Transmit_HS((uint8_t *)"Hello\r", 6);//≤‚ ‘–Èƒ‚¥Æø⁄”√
 					

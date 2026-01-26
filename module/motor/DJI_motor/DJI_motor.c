@@ -13,6 +13,7 @@
 #include "bsp_dwt.h"
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
+size_t i;
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
 static DJI_motor_instance_t *dji_motor_instances[DJI_MOTOR_CNT] = {NULL}; // 会在control任务中遍历该指针数组进行pid计算
 
@@ -377,7 +378,7 @@ void DJI_Motor_Control(void)
     float pid_fab, pid_ref;                 // 电机PID测量值和设定值
 
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
-    for (size_t i = 0; i < idx; ++i)
+    for (i = 0; i < idx; ++i)
     { // 减小访存开销,先保存指针引用
         motor = dji_motor_instances[i];
         motor_setting = &motor->motor_settings;
@@ -491,7 +492,7 @@ void DJI_Motor_Control(void)
     /* ------------------------------handler------------------------------------*/
 
     // 遍历flag,检查是否要发送这一帧报文TODO(GUATAI):后续应解耦，能够由开发者来选择何时发送，来达到每个模块不同控制频率的需求
-    for (size_t i = 0; i < 15; ++i)
+    for (i = 0; i < 15; ++i)
     {
         if (sender_enable_flag[i])
         {

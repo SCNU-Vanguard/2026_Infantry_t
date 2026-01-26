@@ -20,6 +20,15 @@ float omega_z;
 float test_omega;
 
 //注意堆栈大小，使用同一个结构体，堆栈太小到会导致配置错误
+//PID_t chassis_3508_speed_pid = {
+//    .kp = 28.005f,
+//    .ki = 0.26f,
+//    .kd = 3.0f,
+//    .output_limit = 15000.0f, 
+//    .integral_limit = 1000.0f,
+//    .dead_band = 0.0f,
+//};
+
 PID_t chassis_3508_speed_pid = {
     .kp = 28.005f,
     .ki = 0.26f,
