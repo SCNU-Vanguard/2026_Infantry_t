@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include "DJI_motor.h"
+#include "shoot_motor.h"
 #include "rs485.h"
 
 
@@ -35,6 +36,11 @@ extern uint8_t shoot_mode_last;
 extern uint8_t shoot_mode;
 extern uint16_t target_shoot_frequence;
 extern uint8_t shoot_permission;
+extern shoot_motor_instance_t *friction_motor[3];
+
+extern float temp_v_yaw;
+extern float temp_v_pitch_neck;
+extern float temp_v_pitch_head;
 
 void Shoot_Init(void);
 void Shoot_Enable(void);

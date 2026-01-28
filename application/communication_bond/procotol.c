@@ -42,8 +42,9 @@ void VOFA_Display_Pitch_Head(void)
 	vofa_data_view[0] = INS.Roll;
 	vofa_data_view[1] = pitch_head_target;
 	vofa_data_view[2] = pitch_head_measure;
+	vofa_data_view[3] = temp_v_pitch_head;
 	
-	VOFA_JustFloat(vofa_data_view, 3);
+	VOFA_JustFloat(vofa_data_view, 4);
 }
 
 void VOFA_Display_Yaw(void)
@@ -51,20 +52,41 @@ void VOFA_Display_Yaw(void)
 	vofa_data_view[0] = INS.Yaw;
 	vofa_data_view[1] = yaw_speed_target;
 	vofa_data_view[2] = yaw_speed_measure;
+	vofa_data_view[3] = temp_v_yaw;
 	
-	VOFA_JustFloat(vofa_data_view, 3);
+	VOFA_JustFloat(vofa_data_view, 4);
 }
 
 void VOFA_Display_Speed(void)
 {
-	vofa_data_view[0] = chassis_m3508[0]->measure.speed;
-	vofa_data_view[1] = chassis_m3508[1]->measure.speed;
-	vofa_data_view[2] = chassis_m3508[2]->measure.speed;
-	vofa_data_view[3] = chassis_m3508[3]->measure.speed;
-	vofa_data_view[0] *= -1;
-	vofa_data_view[3] *= -1;
+//	vofa_data_view[0] = chassis_m3508[0]->measure.speed;
+//	vofa_data_view[1] = chassis_m3508[1]->measure.speed;
+//	vofa_data_view[2] = chassis_m3508[2]->measure.speed;
+//	vofa_data_view[3] = chassis_m3508[3]->measure.speed;
+//	vofa_data_view[0] *= -1;
+//	vofa_data_view[3] *= -1;
+//	
+//	vofa_data_view[4] = omega_z;
+//	
+//	
+//	vofa_data_view[5] = -target_speed[0];
+//	vofa_data_view[6] = target_speed[1];
+//	vofa_data_view[7] = target_speed[2];
+//	vofa_data_view[8] = -target_speed[3];
+	
+	vofa_data_view[0] = fabsf(chassis_m3508[0]->measure.speed);
+	vofa_data_view[1] = fabsf(chassis_m3508[1]->measure.speed);
+	vofa_data_view[2] = fabsf(chassis_m3508[2]->measure.speed);
+	vofa_data_view[3] = fabsf(chassis_m3508[3]->measure.speed);
 	
 	vofa_data_view[4] = omega_z;
 	
-	VOFA_JustFloat(vofa_data_view, 5);
+	
+	vofa_data_view[5] = fabsf(target_speed[0]);
+	vofa_data_view[6] = fabsf(target_speed[1]);
+	vofa_data_view[7] = fabsf(target_speed[2]);
+	vofa_data_view[8] = fabsf(target_speed[3]);
+	
+	
+	VOFA_JustFloat(vofa_data_view, 9);
 }	

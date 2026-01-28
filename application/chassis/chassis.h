@@ -48,5 +48,6 @@ void Chassis_Ctrl_Remote(void);
 extern DJI_motor_instance_t *chassis_m3508[4];
 extern Chassis_CmdTypedef chassis_cmd;
 extern float omega_z;
+extern float target_speed[4];
 
 #endif /* __CHASSIS_H__ */

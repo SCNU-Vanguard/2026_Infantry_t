@@ -517,10 +517,10 @@ void DM_Motor_Control(void)
                 pid_ref += *motor_controller->speed_feedforward_ptr;
             }
 
-            if (motor_setting->speed_feedback_source == OTHER_FEED)
-            {
-                pid_fab = *motor_controller->other_speed_feedback_ptr;
-            }
+//            if (motor_setting->speed_feedback_source == OTHER_FEED)
+//            {
+//                pid_fab = *motor_controller->other_speed_feedback_ptr;
+//            }
 
             // 更新pid_ref进入下一个环
             pid_ref = PID_Increment(motor_controller->speed_PID,

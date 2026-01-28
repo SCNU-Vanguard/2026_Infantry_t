@@ -62,6 +62,15 @@ PID_t angle_pid_yaw = {
 	.dead_band = 0.0f,
 };
 
+//PID_t angle_pid_yaw = {
+//	.kp = -2.7f,        //注意pid输出方向
+//	.ki = 0.0f,
+//	.kd = -120,
+//	.integral_limit = 0.0f,
+//	.output_limit = 2.0f,//3rad/s
+//	.dead_band = 0.0f,
+//};
+
 PID_t speed_pid_yaw = {
 	.kp = 3.3f,
 	.ki = 0.003f,
@@ -71,10 +80,28 @@ PID_t speed_pid_yaw = {
 	.dead_band = 0.0f,
 };
 
+//PID_t angle_pid_pitch_head = {
+//	.kp = 3.8f,	//注意输出方向
+//	.ki = 0.0f,
+//	.kd = 100.0f,
+//	.integral_limit = 0.0f,
+//	.output_limit = 2.0f,
+//	.dead_band = 0.0f,
+//};
+
+//PID_t speed_pid_pitch_head = {
+//	.kp = 3.0f,
+//	.ki = 0.018f,
+//	.kd = 2.4f,
+//	.integral_limit = 10.0f,
+//	.output_limit = 50.0f,
+//	.dead_band = 0.0f,
+//};
+
 PID_t angle_pid_pitch_head = {
-	.kp = 3.8f,	//注意输出方向
+	.kp = 3.4f,	//注意输出方向
 	.ki = 0.0f,
-	.kd = 100.0f,
+	.kd = 70.0f,
 	.integral_limit = 0.0f,
 	.output_limit = 2.0f,
 	.dead_band = 0.0f,
@@ -308,7 +335,8 @@ void Gimbal_Control_Remote(void)
 		{
 			shoot_permission = 0;//摩擦轮不许转
 			
-			if(yaw_to_mid < 0.85 && temp_v_pitch_neck < (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2)//yaw轴不居中且还没缩头，yaw轴要转到中间
+			if(yaw_to_mid < 0.85 && temp_v_pitch_neck < (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2		//yaw轴不居中且还没缩头，yaw轴要转到中间
+			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
 			{
 				//yaw
 				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
@@ -319,7 +347,8 @@ void Gimbal_Control_Remote(void)
 																									
 				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
 			}
-			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MIN_ANGLE - PITCH_NECK_TRANSFORM_JUDGEMENT)//Yaw轴居中但还没缩头，yaw轴不动，等缩完头才动
+			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MIN_ANGLE - PITCH_NECK_TRANSFORM_JUDGEMENT		//Yaw轴居中但还没缩头，yaw轴不动，等缩完头才动
+			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
 			{
 				/*p_head*/	
 				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置
@@ -430,6 +459,23 @@ void Gimbal_Control_Remote(void)
 				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
 			}
 		}
+		else if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)
+		{
+			//维持neck位置
+			temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
+			USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
+			DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
+			DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
+			
+			//head
+			temp_v_pitch_head = vs_aim_packet_from_nuc.pitch;
+			USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
+			DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
+			
+			//yaw
+            temp_v_yaw = vs_aim_packet_from_nuc.yaw;
+            DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+		}
 	}
 	else//云台失能
 	{
@@ -450,8 +496,8 @@ void Gimbal_Control_Remote(void)
     //全部电机计算
     DM_Motor_Control();
 		 
-	yaw_speed_measure = DM_6006_yaw->motor_controller.speed_PID->measure;
+	yaw_speed_measure = DM_6006_yaw->motor_controller.angle_PID->measure;
 	yaw_speed_target = DM_6006_yaw->motor_controller.speed_PID->target;
-	pitch_head_measure = DM_4310_pitch_head->motor_controller.speed_PID->measure;
+	pitch_head_measure = DM_4310_pitch_head->motor_controller.angle_PID->measure;
 	pitch_head_target = DM_4310_pitch_head->motor_controller.speed_PID->target;
 }

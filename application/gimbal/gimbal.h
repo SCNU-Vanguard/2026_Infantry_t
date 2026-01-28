@@ -27,8 +27,8 @@
 #include "INS.h"
 #include "chassis.h"
 #include "shoot.h"
-
 #include "pid.h"
+#include "Serial.h"
 
 typedef enum
 {
@@ -41,7 +41,7 @@ typedef enum
 
 typedef enum
 {
-//	CTRL_HEAD = 1,
+	AUTOMATIC_AIMING = 1,
 	STAND_NECK = 3,//启动云台控制
 	SIT_NECK = 2,//停止云台控制
 } gimbal_ctrl_e;//云台控制
