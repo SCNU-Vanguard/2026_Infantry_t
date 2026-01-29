@@ -18,6 +18,7 @@
 #include "bmi088.h"
 #include "chassis.h"
 #include "gimbal.h"
+#include "PowerCtrl.h"
 
 extern bmi088_data_t imu_data;
 
@@ -90,3 +91,12 @@ void VOFA_Display_Speed(void)
 	
 	VOFA_JustFloat(vofa_data_view, 9);
 }	
+
+void VOFA_Display_Power(void)
+{
+	vofa_data_view[0] = chassis_max_power;
+	vofa_data_view[1] = P_total;
+	vofa_data_view[2] = P_test;
+	
+	VOFA_JustFloat(vofa_data_view, 3);
+}

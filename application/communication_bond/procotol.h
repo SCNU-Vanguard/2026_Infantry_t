@@ -28,5 +28,6 @@ void VOFA_Display_IMU(void);
 void VOFA_Display_Pitch_Head(void);
 void VOFA_Display_Yaw(void);
 void VOFA_Display_Speed(void);
+void VOFA_Display_Power(void);
 
 #endif /* __PROCOTOL_H__ */

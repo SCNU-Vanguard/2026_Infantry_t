@@ -10,6 +10,7 @@
 */
 #include "DJI_motor.h"
 
+#include "PowerCtrl.h"
 #include "bsp_dwt.h"
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
@@ -475,7 +476,30 @@ void DJI_Motor_Control(void)
         // 获取最终输出
         motor->target.current = (int16_t)pid_ref;
 
-        // 分组填入发送数据
+//        // 分组填入发送数据
+//        group = motor->sender_group;
+//        num = motor->message_num;
+//        sender_assignment[group].tx_buff[2 * num] = (uint8_t)(motor->target.current >> 8);         // 低八位
+//        sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(motor->target.current & 0x00ff); // 高八位
+
+//        // 若该电机处于停止状态,直接将buff置零
+//        if (motor->motor_state_flag == MOTOR_DISABLE)
+//        {
+//            PID_Init(motor_controller->angle_PID);
+//            PID_Init(motor_controller->speed_PID);
+//            memset(sender_assignment[group].tx_buff + 2 * num, 0, sizeof(uint16_t));
+//        }
+    }
+    /* ------------------------------handler------------------------------------*/
+	
+	//功率控制
+	chassis_power_control();
+	
+	for(i = 0; i < idx; ++i)
+	{
+		motor = dji_motor_instances[i];
+		
+		// 分组填入发送数据
         group = motor->sender_group;
         num = motor->message_num;
         sender_assignment[group].tx_buff[2 * num] = (uint8_t)(motor->target.current >> 8);         // 低八位
@@ -488,8 +512,7 @@ void DJI_Motor_Control(void)
             PID_Init(motor_controller->speed_PID);
             memset(sender_assignment[group].tx_buff + 2 * num, 0, sizeof(uint16_t));
         }
-    }
-    /* ------------------------------handler------------------------------------*/
+	}
 
     // 遍历flag,检查是否要发送这一帧报文TODO(GUATAI):后续应解耦，能够由开发者来选择何时发送，来达到每个模块不同控制频率的需求
     for (i = 0; i < 15; ++i)

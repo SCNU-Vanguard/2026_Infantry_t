@@ -277,11 +277,11 @@ void Gimbal_Init(void)
 {
     /*DM电机注册*/
 	#if ROLL_TO_PITCH	//排放位置导致roll为头的pitch
-			p_h_4310.controller_param_init_config.other_angle_feedback_ptr = &INS.Roll;//使用imu的pitch角度作为head电机的角度反馈
+		p_h_4310.controller_param_init_config.other_angle_feedback_ptr = &INS.Roll;//使用imu的pitch角度作为head电机的角度反馈
     #else
         p_h_4310.controller_param_init_config.other_angle_feedback_ptr = &INS.Pitch;
     #endif
-	  dm_6006_yaw.controller_param_init_config.other_angle_feedback_ptr = &INS.Yaw;//使用imu的yaw角度作为yaw电机的角度反馈
+	dm_6006_yaw.controller_param_init_config.other_angle_feedback_ptr = &INS.Yaw;//使用imu的yaw角度作为yaw电机的角度反馈
     dm_6006_yaw.controller_param_init_config.speed_feedforward_ptr = &chassis_cmd.omega_follow;//添加小陀螺转速补偿
 
     DM_4310_pitch_head = DM_Motor_Init(&p_h_4310);
