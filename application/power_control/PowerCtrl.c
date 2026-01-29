@@ -10,7 +10,7 @@ float P_total = 0;   // 测量总功率
 float P_total_temp = 0; // 临时总功率
 
 float P_cmd[4] = {0}; // 以最大功率上线分配所得的功率
-float chassis_max_power = 20; // 底盘最大功率 , 5~8W 的误差 
+float chassis_max_power = 100; // 底盘最大功率 , 5~8W 的误差 
 
 float I_temp[4] = {0};
 

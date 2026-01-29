@@ -131,7 +131,7 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	else if( rc_ctl -> rc . switch_left == 3 )									//全车使能
 	{
 		chs -> mode = FOLLOW;
-		chs -> omega_z = -(rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN * 3) ;
+		chs -> omega_z = -(rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN) ;
 		
 		gim -> status = GIMBAL_ENABLE;
 		

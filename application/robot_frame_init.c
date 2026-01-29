@@ -30,7 +30,7 @@
 #include "daemon.h"
 #include "INS.h"
 #include "procotol.h"
-
+#include "superpower.h"
 
 #include "bmi088.h"
 #include "ws2812.h"
@@ -67,6 +67,8 @@ static void Frame_Device_Init(void)
     Gimbal_Init();
 	
     Shoot_Init();
+	
+	Super_Power_Init();
 }
 
 /*
