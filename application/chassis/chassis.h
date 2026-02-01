@@ -7,6 +7,9 @@
 #include "DJI_motor.h"
 #include "DM_motor.h"
 #include "robot_frame_config.h"
+#include "vofa.h"
+#include "pid.h"
+#include "gimbal.h"
 
 typedef enum
 {

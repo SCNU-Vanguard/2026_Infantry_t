@@ -2,7 +2,6 @@
 #include <math.h>
 
 #define CONTROL_TASK_PERIOD 1 // ms
-#define ANGLE_REFERENCE -1.00836813  //底盘坐标系转云台坐标系角度参考值
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
 #define YAW_DEADBAND 3 //yaw轴死区值
 #define MAX_ABS_INCREMENT 0.003 //限制电机转速增量的值
@@ -61,10 +60,10 @@ void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_
 	yaw_to_mid = cosf (bias_tmp);
 	
 	///////////////////////////////////////////////////////////////////////////////////////////不要底盘坐标系转云台坐标系就注释这一段
-//	float vx_tmp = cmd -> vx * cosf (bias_tmp) - cmd -> vy * sinf (bias_tmp);
-//	float vy_tmp = cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
-//	cmd -> vx = vx_tmp;
-//	cmd -> vy = vy_tmp;
+	float vx_tmp = cmd -> vx * cosf (bias_tmp) - cmd -> vy * sinf (bias_tmp);
+	float vy_tmp = cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
+	cmd -> vx = vx_tmp;
+	cmd -> vy = vy_tmp;
 	///////////////////////////////////////////////////////////////////////////////////////////
 }
 

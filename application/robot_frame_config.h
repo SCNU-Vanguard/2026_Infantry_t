@@ -38,6 +38,7 @@
     
 #define WHEEL_RADIUS 0.077f	//驱动轮半径（diameter）
 
+#define ANGLE_REFERENCE -1.00836813 //底盘坐标系转云台坐标系角度参考值
     
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.005   //660 ~ -660 

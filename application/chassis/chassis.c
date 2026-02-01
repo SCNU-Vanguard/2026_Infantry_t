@@ -9,7 +9,6 @@
 ******************************************************************************
 */
 #include "chassis.h"
-#include "vofa.h"
 
 DJI_motor_instance_t *chassis_m3508[4];
 Chassis_CmdTypedef chassis_cmd;
@@ -37,6 +36,15 @@ PID_t chassis_3508_speed_pid = {
 //    .integral_limit = 1000.0f,
 //    .dead_band = 0.0f,
 //};
+
+PID_t omega_follow_pid = {
+    .kp = 20.0f,
+    .ki = 0.0f,
+    .kd = 1200.0f,
+    .output_limit = 5.0f, 
+    .integral_limit = 0.0f,
+    .dead_band = 0.0001f,
+};
 
 motor_init_config_t chassis_3508_init = {
     .controller_param_init_config = {
@@ -166,9 +174,9 @@ void Chassis_Stop(void)
 
 void Chassis_Ctrl_Remote(void)
 {
-        //底盘解算
+        //底盘解算获取四个轮子转速
         Mecanum_Solve(&chassis_cmd, target_speed);
-        //获取底盘自旋速度
+        //获取底盘自旋速度给小陀螺用
         chassis_cmd.omega_ref = - Chassis_Get_Omega(chassis_m3508) * YAW_FEEDFORWAED_COEFFICIENT;
         //设目标值
         for(int i = 0; i < 4; i++)
@@ -198,6 +206,27 @@ void Chassis_Ctrl_Remote(void)
         else if(chassis_cmd.mode == FOLLOW)
         {
             Chassis_Enable();
+			
+//			//底盘跟随
+//			if(gimbal_cmd.status)
+//			{
+//				if(gimbal_cmd.ctrl_mode == SIT_NECK)//脖子收缩用底盘跟随
+//				{
+//					chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, ANGLE_REFERENCE);
+//				}
+//				else//脖子伸出和自瞄就用底盘坐标系转云台坐标系
+//				{
+//					chassis_cmd.omega_follow = 0;
+//				}
+//			}
+			if(chassis_cmd.omega_z)
+			{
+				chassis_cmd.omega_follow = 0;
+			}
+			else
+			{
+				chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, ANGLE_REFERENCE);
+			}
         }
         else if(chassis_cmd.mode == STOP_C)
         {
