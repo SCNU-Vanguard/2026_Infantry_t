@@ -22,9 +22,11 @@ typedef struct
     float vy;
 
     float omega_z;       //底盘小陀螺时的角速度(rad/s)
-    float omega_follow;   //底盘跟随时的角速度  (rad/s)
+    float omega_follow;   //底盘跟随时的角速度  (rad/s)  
+	float omega_ref;		//结算出来的底盘角速度(rad/s)
+	
     chassis_mode_e mode;
-}__attribute__((__packed__))Chassis_CmdTypedef;
+}Chassis_CmdTypedef;	//__attribute__((__packed__))Chassis_CmdTypedef;
 
 //typedef struct
 //{

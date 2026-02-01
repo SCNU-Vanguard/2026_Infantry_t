@@ -150,7 +150,7 @@ motor_init_config_t dm_6006_yaw = {
         .other_speed_feedback_ptr = NULL,
 
         .angle_feedforward_ptr = NULL,
-        .speed_feedforward_ptr = NULL,///////////////////////////////////////////////////////////////////疑似没给前馈
+        .speed_feedforward_ptr = NULL,//在初始化函数那里给的
         .current_feedforward_ptr = NULL,
         .torque_feedforward_ptr = NULL,
 
@@ -282,7 +282,7 @@ void Gimbal_Init(void)
         p_h_4310.controller_param_init_config.other_angle_feedback_ptr = &INS.Pitch;
     #endif
 	dm_6006_yaw.controller_param_init_config.other_angle_feedback_ptr = &INS.Yaw;//使用imu的yaw角度作为yaw电机的角度反馈
-    dm_6006_yaw.controller_param_init_config.speed_feedforward_ptr = &chassis_cmd.omega_follow;//添加小陀螺转速补偿
+    dm_6006_yaw.controller_param_init_config.speed_feedforward_ptr = &chassis_cmd.omega_ref;//添加小陀螺转速补偿
 
     DM_4310_pitch_head = DM_Motor_Init(&p_h_4310);
 
@@ -336,7 +336,8 @@ void Gimbal_Control_Remote(void)
 			shoot_permission = 0;//摩擦轮不许转
 			
 			if(yaw_to_mid < 0.85 && temp_v_pitch_neck < (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2		//yaw轴不居中且还没缩头，yaw轴要转到中间
-			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
+			//&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF
+			)//并且摩擦轮停转
 			{
 				//yaw
 				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
@@ -348,7 +349,8 @@ void Gimbal_Control_Remote(void)
 				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
 			}
 			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MIN_ANGLE - PITCH_NECK_TRANSFORM_JUDGEMENT		//Yaw轴居中但还没缩头，yaw轴不动，等缩完头才动
-			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
+			//&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF
+			)//并且摩擦轮停转
 			{
 				/*p_head*/	
 				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置

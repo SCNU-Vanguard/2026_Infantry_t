@@ -14,7 +14,7 @@ void chassis_power_control(void);
 
 extern float chassis_max_power;
 extern float P_total;
-extern float I_test;
+extern float I_test[4];
 extern float P_test;
 
 #endif

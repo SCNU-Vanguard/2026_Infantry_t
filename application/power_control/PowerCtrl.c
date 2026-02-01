@@ -14,7 +14,7 @@ float chassis_max_power = 100; // 底盘最大功率 , 5~8W 的误差
 
 float I_temp[4] = {0};
 
-float I_test;
+float I_test[4];
 float P_test;
 
 void chassis_power_control(void)
@@ -51,7 +51,6 @@ void chassis_power_control(void)
     for(uint8_t i = 0; i < 4; i++) // first get all the initial motor power and total motor power
     {
         speed_rpm = chassis_m3508[i]->measure.speed; //motor_list[i]->data.speed ---> rpm
-
 
         P_cal[i] =  K0 * chassis_m3508[i] -> target.current *speed_rpm +
                         K1 * speed_rpm * speed_rpm +  
@@ -100,6 +99,7 @@ void chassis_power_control(void)
             else
             {
                 I_temp[i] = (-b - sqrt(delta)) / (2*a);
+				
                 if(I_temp[i] < -16000)
                     chassis_m3508[i]->target.current = -16000;
                 else
@@ -110,6 +110,12 @@ void chassis_power_control(void)
 	
 ////////////////////////////////////////////////////////////////////////////////////////////	
 	//I_test = (float)(abs(chassis_m3508[0]->target.current) + abs(chassis_m3508[1]->target.current) + abs(chassis_m3508[2]->target.current) + abs(chassis_m3508[3]->target.current));
+	I_test[0] = (float)abs(chassis_m3508[0]->target.current);
+	I_test[1] = (float)abs(chassis_m3508[1]->target.current);
+	I_test[2] = (float)abs(chassis_m3508[2]->target.current);
+	I_test[3] = (float)abs(chassis_m3508[3]->target.current);
+	
+	
 	for(uint8_t i = 0;i < 4;i++)
 	{
 		speed_rpm = chassis_m3508[i]->measure.speed; //motor_list[i]->data.speed ---> rpm

@@ -62,7 +62,7 @@ void VPC_UpdatePackets(void)
 //  vs_aim_packet_to_nuc.pitch_vel = gimbal_motor_pitch->measure.speed;
   vs_aim_packet_to_nuc.pitch = 0;
   vs_aim_packet_to_nuc.pitch_vel = 0;
-  vs_aim_packet_to_nuc.bullet_speed = 10; // 未定
+  vs_aim_packet_to_nuc.bullet_speed = 20; // 未定
   vs_aim_packet_to_nuc.bullet_count = 0;  // 未定
 
   /*深圳大学版本*/

@@ -60,10 +60,12 @@ void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_
 	
 	yaw_to_mid = cosf (bias_tmp);
 	
+	///////////////////////////////////////////////////////////////////////////////////////////不要底盘坐标系转云台坐标系就注释这一段
 //	float vx_tmp = cmd -> vx * cosf (bias_tmp) - cmd -> vy * sinf (bias_tmp);
 //	float vy_tmp = cmd -> vx * sinf (bias_tmp) + cmd -> vy * cosf (bias_tmp);
 //	cmd -> vx = vx_tmp;
 //	cmd -> vy = vy_tmp;
+	///////////////////////////////////////////////////////////////////////////////////////////
 }
 
 /*

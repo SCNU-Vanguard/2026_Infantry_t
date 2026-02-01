@@ -20,23 +20,23 @@ float omega_z;
 float test_omega;
 
 //注意堆栈大小，使用同一个结构体，堆栈太小到会导致配置错误
-//PID_t chassis_3508_speed_pid = {
-//    .kp = 28.005f,
-//    .ki = 0.26f,
-//    .kd = 3.0f,
-//    .output_limit = 15000.0f, 
-//    .integral_limit = 1000.0f,
-//    .dead_band = 0.0f,
-//};
-
 PID_t chassis_3508_speed_pid = {
     .kp = 28.005f,
     .ki = 0.26f,
-    .kd = 3.0f,
+    .kd = 2.8f,	//3.0f
     .output_limit = 15000.0f, 
     .integral_limit = 1000.0f,
     .dead_band = 0.0f,
 };
+
+//PID_t chassis_3508_speed_pid = {
+//    .kp = 26.4f,
+//    .ki = 0.22f,
+//    .kd = 2.7f,
+//    .output_limit = 15000.0f, 
+//    .integral_limit = 1000.0f,
+//    .dead_band = 0.0f,
+//};
 
 motor_init_config_t chassis_3508_init = {
     .controller_param_init_config = {
@@ -100,10 +100,15 @@ void Mecanum_Solve(Chassis_CmdTypedef *cmd, float *ret)
 	*/
   omega_z = cmd->omega_z + cmd->omega_follow;
 
-  ret[0] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-  ret[1] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-  ret[2] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-  ret[3] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+//  ret[0] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+//  ret[1] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+//  ret[2] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+//  ret[3] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
+
+  ret[0] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+  ret[1] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - ( cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+  ret[2] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - ( cmd->vx + cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+  ret[3] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
 }
 
 /*
@@ -119,13 +124,13 @@ float Chassis_Get_Omega (DJI_motor_instance_t *M3508[])
 
 	for(i = 0; i < 4; i++)
     {
-        v_total += M3508[i]->measure.speed; //单位rpm
+        v_total += M3508[i]->measure.speed_rpm; //单位rpm
     }
 		 
-	v_total = v_total/4;                                            //平均一个3508 ， 单位rpm
-	v_total = v_total * RPM_2_RAD_PER_SEC /60;                      // 转子 --> 转轴   rpm-->rps
-	v_total = v_total * WHEEL_RADIUS / ( ( LENGTH + WIDTH) / 2); // rps （轮子的线速度 = 底盘的线速度） 单位变换时要调内环PID
-	return v_total;    
+	v_total = v_total / 4;                        //平均一个3508 ， 单位rpm
+	v_total = v_total / 60;                      // 转子 --> 转轴   rpm-->rps
+	v_total = v_total * WHEEL_RADIUS / ( ( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 2 * PI; // rps-->rad/s （轮子的线速度 = 底盘的线速度） 单位变换时要调内环PID
+	return v_total;
 }
 
 /*
@@ -164,7 +169,7 @@ void Chassis_Ctrl_Remote(void)
         //底盘解算
         Mecanum_Solve(&chassis_cmd, target_speed);
         //获取底盘自旋速度
-        chassis_cmd.omega_follow = - Chassis_Get_Omega(chassis_m3508);
+        chassis_cmd.omega_ref = - Chassis_Get_Omega(chassis_m3508) * YAW_FEEDFORWAED_COEFFICIENT;
         //设目标值
         for(int i = 0; i < 4; i++)
         {

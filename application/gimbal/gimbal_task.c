@@ -42,7 +42,7 @@ void Gimbal_Task_Init(void)
 {
     const osThreadAttr_t attr = {
         .name = "Gimbal_Task",
-        .stack_size = 128 * 8,
+        .stack_size = 512 * 8,
         .priority = (osPriority_t)osPriorityRealtime4,
     };
     gimbal_task_handel = osThreadNew(Gimbal_Task, NULL, &attr);
@@ -59,14 +59,14 @@ static void Gimbal_Task(void *argument)
 
     for (;;)
     {
+		//云台遥控器控制
+        Gimbal_Control_Remote();
+		
 		Choose_VPC_Type();
         VPC_UpdatePackets(); //接收准备发送的数据
         //NV_Pack_And_Send_Data_ROS2(&nv_aim_packet_to_nuc); //导航数据包发送
         VS_Pack_And_Send_Data_ROS2(&vs_aim_packet_to_nuc); //视觉数据包发送
         // Pack_And_Send_Data_ROS2(&aim_packet_to_nuc);
-		
-        //云台遥控器控制
-        Gimbal_Control_Remote();
 
         gimbal_task_diff = osKernelGetTickCount() - time;
         time = osKernelGetTickCount();

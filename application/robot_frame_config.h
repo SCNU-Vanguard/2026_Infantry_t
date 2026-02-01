@@ -42,7 +42,7 @@
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.005   //660 ~ -660 
 #define REMOTE_Y_SEN 0.005
-#define REMOTE_OMEGA_Z_SEN 0.1f  //6.6
+#define REMOTE_OMEGA_Z_SEN 0.005f  //6.6
 
 #define REMOTE_YAW_SEN 0.000015f       
 #define REMOTE_PITCH_SEN 0.000002f
@@ -66,5 +66,7 @@
 
 #define YAW_MAX_SPEED 2.0f //rad/s
 #define YAW_COEFFICIENT 0.6 //遥控器增量乘的系数
+
+#define YAW_FEEDFORWAED_COEFFICIENT 0.22	//小陀螺yaw轴前馈用的系数
 
 #endif /* __ROBOT_FRAME_CONFIG_H__ */

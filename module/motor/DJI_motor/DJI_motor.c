@@ -168,6 +168,8 @@ static void Decode_DJI_Motor(CAN_instance_t *_instance)
     measure->ecd = ((measure->ecd >= measure->offset_ecd) ? (measure->ecd - measure->offset_ecd) : (measure->ecd + 8191 - measure->offset_ecd));
 
     measure->angle_single_round = ECD_ANGLE_COEF_DJI * (float)measure->ecd;
+    measure->speed_rpm = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_rpm +
+                         SPEED_SMOOTH_COEF * (float)((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
     measure->speed_aps = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_aps +
                          RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float)((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
     measure->real_current = (1.0f - CURRENT_SMOOTH_COEF) * measure->real_current +
@@ -448,6 +450,7 @@ void DJI_Motor_Control(void)
                     pid_fab = receive_data->speed_aps;
                 }
             }
+			
             // 更新pid_ref进入下一个环
             pid_ref = PID_Increment(motor_controller->speed_PID,
                                     pid_fab,
@@ -479,8 +482,8 @@ void DJI_Motor_Control(void)
 //        // 分组填入发送数据
 //        group = motor->sender_group;
 //        num = motor->message_num;
-//        sender_assignment[group].tx_buff[2 * num] = (uint8_t)(motor->target.current >> 8);         // 低八位
-//        sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(motor->target.current & 0x00ff); // 高八位
+//        sender_assignment[group].tx_buff[2 * num] = (uint8_t)(motor->target.current >> 8);         // 高八位
+//        sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(motor->target.current & 0x00ff); // 低八位
 
 //        // 若该电机处于停止状态,直接将buff置零
 //        if (motor->motor_state_flag == MOTOR_DISABLE)
@@ -493,7 +496,7 @@ void DJI_Motor_Control(void)
     /* ------------------------------handler------------------------------------*/
 	
 	//功率控制
-	chassis_power_control();
+	//chassis_power_control();
 	
 	for(i = 0; i < idx; ++i)
 	{
@@ -502,8 +505,8 @@ void DJI_Motor_Control(void)
 		// 分组填入发送数据
         group = motor->sender_group;
         num = motor->message_num;
-        sender_assignment[group].tx_buff[2 * num] = (uint8_t)(motor->target.current >> 8);         // 低八位
-        sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(motor->target.current & 0x00ff); // 高八位
+        sender_assignment[group].tx_buff[2 * num] = (uint8_t)(motor->target.current >> 8);         // 高八位
+        sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(motor->target.current & 0x00ff); // 低八位
 
         // 若该电机处于停止状态,直接将buff置零
         if (motor->motor_state_flag == MOTOR_DISABLE)
