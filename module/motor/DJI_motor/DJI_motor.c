@@ -496,7 +496,7 @@ void DJI_Motor_Control(void)
     /* ------------------------------handler------------------------------------*/
 	
 	//功率控制
-	//chassis_power_control();
+	chassis_power_control();
 	
 	for(i = 0; i < idx; ++i)
 	{

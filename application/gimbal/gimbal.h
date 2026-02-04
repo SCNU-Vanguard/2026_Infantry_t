@@ -25,6 +25,7 @@
 
 #include "remote_control.h"
 #include "INS.h"
+#include "bmi088.h"
 #include "chassis.h"
 #include "shoot.h"
 #include "pid.h"
@@ -92,6 +93,8 @@ extern DM_motor_t *DM_4310_pitch_neck;
 extern DM_motor_t *DM_6006_yaw;
 extern float yaw_speed_measure;
 extern float yaw_speed_target;
+extern float yaw_speed_out;
+extern float yaw_angle_measure;
 extern float yaw_to_mid;
 extern float pitch_head_target;
 extern float pitch_head_measure;

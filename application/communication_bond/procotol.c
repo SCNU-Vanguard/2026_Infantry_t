@@ -54,9 +54,11 @@ void VOFA_Display_Yaw(void)
 	vofa_data_view[0] = INS.Yaw;
 	vofa_data_view[1] = yaw_speed_target;
 	vofa_data_view[2] = yaw_speed_measure;
-	vofa_data_view[3] = temp_v_yaw;
+	vofa_data_view[3] = yaw_speed_out;
+	vofa_data_view[4] = temp_v_yaw;
+	vofa_data_view[5] = yaw_angle_measure;
 	
-	VOFA_JustFloat(vofa_data_view, 4);
+	VOFA_JustFloat(vofa_data_view, 6);
 }
 
 void VOFA_Display_Speed(void)

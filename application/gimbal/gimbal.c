@@ -30,6 +30,8 @@ float yaw_to_mid;
 /*测试值*/
 float yaw_speed_target = 0;
 float yaw_speed_measure = 0;
+float yaw_angle_measure = 0;
+float yaw_speed_out = 0;
 float pitch_head_target = 0;
 float pitch_head_measure = 0;
 
@@ -54,18 +56,18 @@ float pitch_head_measure = 0;
 
 //////////////////////////////////////////////////探出鬼头yaw轴pid
 PID_t angle_pid_yaw = {
-	.kp = -2.2f,        //注意pid输出方向
+	.kp = -2.0f,        //注意pid输出方向
 	.ki = 0.0f,
-	.kd = -200,
-	.integral_limit = 0.0f,
+	.kd = -200.0f,
+	.integral_limit = 0.1f,
 	.output_limit = 2.0f,//3rad/s
 	.dead_band = 0.0f,
 };
 
 //PID_t angle_pid_yaw = {
-//	.kp = -2.7f,        //注意pid输出方向
+//	.kp = -2.0f,        //注意pid输出方向
 //	.ki = 0.0f,
-//	.kd = -120,
+//	.kd = -200,
 //	.integral_limit = 0.0f,
 //	.output_limit = 2.0f,//3rad/s
 //	.dead_band = 0.0f,
@@ -75,7 +77,7 @@ PID_t speed_pid_yaw = {
 	.kp = 3.3f,
 	.ki = 0.003f,
 	.kd = 5.1f,
-	.integral_limit = 100.0f,
+	.integral_limit = 30.0f,
 	.output_limit = 50.0f,
 	.dead_band = 0.0f,
 };
@@ -282,6 +284,7 @@ void Gimbal_Init(void)
         p_h_4310.controller_param_init_config.other_angle_feedback_ptr = &INS.Pitch;
     #endif
 	dm_6006_yaw.controller_param_init_config.other_angle_feedback_ptr = &INS.Yaw;//使用imu的yaw角度作为yaw电机的角度反馈
+	dm_6006_yaw.controller_param_init_config.other_speed_feedback_ptr = &bmi088_h7->gyro[2];
     dm_6006_yaw.controller_param_init_config.speed_feedforward_ptr = &chassis_cmd.omega_ref;//添加小陀螺转速补偿
 
     DM_4310_pitch_head = DM_Motor_Init(&p_h_4310);
@@ -475,7 +478,19 @@ void Gimbal_Control_Remote(void)
 			DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 			
 			//yaw
-            temp_v_yaw = vs_aim_packet_from_nuc.yaw;
+//			if(fabsf(temp_v_yaw - vs_aim_packet_from_nuc.yaw) <= YAW_AUTO_AIMING_MAX_ADD)
+//			{
+//				temp_v_yaw = vs_aim_packet_from_nuc.yaw;
+//			}
+//			else if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
+//			{
+//				temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
+//			}
+//			else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
+//			{
+//				temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
+//			}
+			temp_v_yaw = vs_aim_packet_from_nuc.yaw;
             DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
 		}
 	}
@@ -498,8 +513,10 @@ void Gimbal_Control_Remote(void)
     //全部电机计算
     DM_Motor_Control();
 		 
-	yaw_speed_measure = DM_6006_yaw->motor_controller.angle_PID->measure;
+	yaw_angle_measure = DM_6006_yaw->motor_controller.angle_PID->measure;
 	yaw_speed_target = DM_6006_yaw->motor_controller.speed_PID->target;
+	yaw_speed_measure = DM_6006_yaw->motor_controller.speed_PID->measure;
+	yaw_speed_out = DM_6006_yaw->motor_controller.speed_PID->output;
 	pitch_head_measure = DM_4310_pitch_head->motor_controller.angle_PID->measure;
 	pitch_head_target = DM_4310_pitch_head->motor_controller.speed_PID->target;
 }

@@ -43,7 +43,7 @@ PID_t omega_follow_pid = {
     .kd = 1200.0f,
     .output_limit = 5.0f, 
     .integral_limit = 0.0f,
-    .dead_band = 0.0001f,
+    .dead_band = 0.01f,
 };
 
 motor_init_config_t chassis_3508_init = {
@@ -107,11 +107,6 @@ void Mecanum_Solve(Chassis_CmdTypedef *cmd, float *ret)
 					
 	*/
   omega_z = cmd->omega_z + cmd->omega_follow;
-
-//  ret[0] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-//  ret[1] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx - cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-//  ret[2] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
-//  ret[3] = (((omega_z * (( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS);
 
   ret[0] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
   ret[1] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - ( cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
@@ -219,6 +214,7 @@ void Chassis_Ctrl_Remote(void)
 //					chassis_cmd.omega_follow = 0;
 //				}
 //			}
+			
 			if(chassis_cmd.omega_z)
 			{
 				chassis_cmd.omega_follow = 0;
@@ -226,6 +222,11 @@ void Chassis_Ctrl_Remote(void)
 			else
 			{
 				chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, ANGLE_REFERENCE);
+			}
+			
+			if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)//自瞄时先关掉底盘跟随
+			{
+				chassis_cmd.omega_follow = 0;
 			}
         }
         else if(chassis_cmd.mode == STOP_C)

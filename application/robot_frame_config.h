@@ -50,14 +50,14 @@
 
 /*云台相关参数*/    //注意大小问题
 #define PITCH_NECK_MIN_ANGLE  -0.03f //rad , 对应缩头时发送的角度
-#define PITCH_NECK_MAX_ANGLE  -1.0f  //rad , 对应伸出头时发送的角度
+#define PITCH_NECK_MAX_ANGLE  -0.8f  //rad , 对应伸出头时发送的角度
 #define PITCH_NECK_ACTUAL_MIN_ANGLE  -0.0076f //rad , 对应缩头时返回的角度
-#define PITCH_NECK_ACTUAL_MAX_ANGLE  -0.25f  //rad , 对应伸出头时返回的角度
+#define PITCH_NECK_ACTUAL_MAX_ANGLE  -0.20f  //rad , 对应伸出头时返回的角度
 #define PITCH_NECK_MAX_SPEED  1.5f // rad/s
 #define PITCH_NECK_TRANSFORM_SPEED 0.0018 //伸缩变换时使用的过渡增量
 #define PITCH_NECK_TRANSFORM_JUDGEMENT 0.03 //伸缩变换时使用的判断值
 
-#define PITCH_HEAD_MIN_ANGLE  0.24f //rad , 对应伸头时的最低角度
+#define PITCH_HEAD_MIN_ANGLE  0.14f //rad , 对应伸头时的最低角度
 #define PITCH_HEAD_MID_ANGLE  -0.02f //rad , 对应中间的角度
 #define PITCH_HEAD_MAX_ANGLE  -0.38f  //rad , 对应伸出头时的最高角度
 #define PITCH_HEAD_MAX_SPEED  0.001f // rad/s
@@ -69,5 +69,7 @@
 #define YAW_COEFFICIENT 0.6 //遥控器增量乘的系数
 
 #define YAW_FEEDFORWAED_COEFFICIENT 0.22	//小陀螺yaw轴前馈用的系数
+
+#define YAW_AUTO_AIMING_MAX_ADD 0.006
 
 #endif /* __ROBOT_FRAME_CONFIG_H__ */
