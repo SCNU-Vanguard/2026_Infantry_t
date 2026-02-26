@@ -36,6 +36,7 @@ extern uint8_t shoot_mode_last;
 extern uint8_t shoot_mode;
 extern uint16_t target_shoot_frequence;
 extern uint8_t shoot_permission;
+extern DJI_motor_instance_t *chassis_shoot_motor;
 extern shoot_motor_instance_t *friction_motor[3];
 
 extern float temp_v_yaw;

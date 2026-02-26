@@ -20,7 +20,7 @@
  * @param[out]		state : 滤波结构数据指针
  * @param[in]		q & r
  */
-void Kalman_One_Init(kalman_onw_filter_t *state, float q, float r)
+void Kalman_One_Init(kalman_one_filter_t *state, float q, float r)
 {
     state->x = 0.0f;
     state->p = 0.0f;
@@ -35,7 +35,7 @@ void Kalman_One_Init(kalman_onw_filter_t *state, float q, float r)
  * @param[out]		state : 滤波结构数据指针
  * @param[in]		z_measure : 原始数据
  */
-float Kalman_One_Filter(kalman_onw_filter_t *state, float z_measure)
+float Kalman_One_Filter(kalman_one_filter_t *state, float z_measure)
 {
     /* Predict */
 	// 时间更新(预测): X(k|k-1) = A(k,k-1)*X(k-1|k-1) + B(k)*u(k)

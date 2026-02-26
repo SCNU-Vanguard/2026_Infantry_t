@@ -18,10 +18,13 @@
 #include "bmi088.h"
 #include "chassis.h"
 #include "gimbal.h"
+#include "shoot.h"
 #include "PowerCtrl.h"
 #include "superpower.h"
+#include "INS.h"
 
 extern bmi088_data_t imu_data;
+extern INS_behaviour_t INS;
 
 void VOFA_Display_IMU(void)
 {
@@ -41,22 +44,25 @@ void VOFA_Display_IMU(void)
 
 void VOFA_Display_Pitch_Head(void)
 {
-	vofa_data_view[0] = INS.Roll;
-	vofa_data_view[1] = pitch_head_target;
-	vofa_data_view[2] = pitch_head_measure;
-	vofa_data_view[3] = temp_v_pitch_head;
+	vofa_data_view[0] = pitch_head_angle_target;
+	vofa_data_view[1] = pitch_head_angle_measure;
+	vofa_data_view[2] = pitch_head_speed_target;
+	vofa_data_view[3] = pitch_head_speed_measure;
+	vofa_data_view[4] = pitch_head_speed_out;
+	vofa_data_view[5] = INS.Gyro[1] / PI;
+	vofa_data_view[6] = DM_4310_pitch_neck->receive_data.velocity;
 	
-	VOFA_JustFloat(vofa_data_view, 4);
+	VOFA_JustFloat(vofa_data_view, 7);
 }
 
 void VOFA_Display_Yaw(void)
 {
-	vofa_data_view[0] = INS.Yaw;
-	vofa_data_view[1] = yaw_speed_target;
-	vofa_data_view[2] = yaw_speed_measure;
-	vofa_data_view[3] = yaw_speed_out;
-	vofa_data_view[4] = temp_v_yaw;
-	vofa_data_view[5] = yaw_angle_measure;
+	vofa_data_view[0] = yaw_angle_target;
+	vofa_data_view[1] = yaw_angle_measure;
+	vofa_data_view[2] = yaw_speed_target;
+	vofa_data_view[3] = yaw_speed_measure;
+	vofa_data_view[4] = yaw_speed_out;
+	vofa_data_view[5] = -INS.Gyro[2] / 4.5;
 	
 	VOFA_JustFloat(vofa_data_view, 6);
 }
@@ -109,4 +115,13 @@ void VOFA_Display_Power(void)
 //	vofa_data_view[7] = I_test[3];
 	
 	VOFA_JustFloat(vofa_data_view, 4);
+}
+
+void VOFA_Display_Shoot(void)
+{
+	vofa_data_view[0] = chassis_shoot_motor->measure.speed;
+	
+	vofa_data_view[1] = -(float)target_shoot_frequence;
+	
+	VOFA_JustFloat(vofa_data_view, 2);
 }

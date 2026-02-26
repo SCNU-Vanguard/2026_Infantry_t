@@ -29,8 +29,8 @@ uint8_t test = 0;
 
 PID_t chassis_2006_speed_pid = {
     .kp = 30.0f,
-    .ki = 2.0f,
-    .kd = 0.0f,
+    .ki = 0.1f,
+    .kd = 0.1f,
     .output_limit = 9000.0f,
     .integral_limit = 9000.0f,
     .dead_band = 0.0f,
@@ -75,7 +75,7 @@ motor_init_config_t chassis_2006_init = {
         .outer_loop_type = SPEED_LOOP,
         .close_loop_type = SPEED_LOOP,
 
-        .motor_reverse_flag = MOTOR_DIRECTION_REVERSE,
+        .motor_reverse_flag = MOTOR_DIRECTION_REVERSE,//因为拨弹盘只能往一个方向转，用了uint类型，然后和实际需要的方向反了，在这里启用反相
         .feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
 
         .angle_feedback_source = MOTOR_FEED,
@@ -200,7 +200,7 @@ void Shoot_Control_Remote(void)
 				
 				Shoot_Set_All_Friction(SHOOT_V);
 				
-				if(friction_motor[0] -> receive_flag == 0xA5 && friction_motor[1] -> receive_flag == 0xA5 && friction_motor[2] -> receive_flag == 0xA5)
+				if(friction_motor[0] -> receive_flag == 0xA5 && friction_motor[1] -> receive_flag == 0xA5 && friction_motor[2] -> receive_flag == 0xA5)//摩擦轮开转后再给拨弹盘设置转速
 				{
 					DJI_Motor_Set_Ref(chassis_shoot_motor, target_shoot_frequence);
 				}

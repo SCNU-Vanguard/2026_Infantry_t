@@ -29,5 +29,6 @@ void VOFA_Display_Pitch_Head(void);
 void VOFA_Display_Yaw(void);
 void VOFA_Display_Speed(void);
 void VOFA_Display_Power(void);
+void VOFA_Display_Shoot(void);
 
 #endif /* __PROCOTOL_H__ */

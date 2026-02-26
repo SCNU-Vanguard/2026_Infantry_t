@@ -14,6 +14,10 @@
 
 #include <stdint.h>
 
+#ifndef PI
+  #define PI               3.14159265358979f
+#endif
+
 extern void INS_Task_Init(void);
 
 #endif /* __INS_TASK_H__ */

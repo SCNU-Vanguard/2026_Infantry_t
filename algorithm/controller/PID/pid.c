@@ -138,7 +138,8 @@ float PID_Increment(PID_t *pid, float measure, float target)
         pid->i_out = pid->i_term;
         pid->d_out = pid->kd * (pid->error - 2.0f * pid->last_error + pid->pre_error);
 
-        pid->i_out = Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit); // 积分限幅
+		//TODO(GUATAI):
+//        pid->i_out = Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit); // 积分限幅
 
         pid->output += (pid->p_out + pid->i_out + pid->d_out); // 计算输出
 

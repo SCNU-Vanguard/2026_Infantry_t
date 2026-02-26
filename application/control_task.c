@@ -127,12 +127,12 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 		chs -> omega_z = 0;
 		
 		shoot_mode = SHOOT_MODE_FIRE;
-		target_shoot_frequence = rc_ctl->rc . dial / 660.0 * 300.0;
+		target_shoot_frequence = abs(rc_ctl->rc . dial) / 660.0 * 300.0;
 	}
 	else if( rc_ctl -> rc . switch_left == 3 )									//全车使能
 	{
 		chs -> mode = FOLLOW;
-		chs -> omega_z = -(rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN) ;
+		chs -> omega_z = -(rc_ctl->rc . dial * REMOTE_OMEGA_Z_SEN) ;			//小陀螺转速
 		
 		gim -> status = GIMBAL_ENABLE;
 		

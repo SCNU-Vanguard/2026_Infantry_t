@@ -87,4 +87,7 @@ extern float INS_GET_PITCH(void);
 
 extern INS_behaviour_t INS;
 
+extern float Gyro_Pitch;
+extern float Gyro_Yaw;
+
 #endif /* __INS_H__ */

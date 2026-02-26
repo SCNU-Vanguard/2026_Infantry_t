@@ -119,7 +119,7 @@ void chassis_power_control()
 				P_cmd[i] = chassis_max_power * weight[i];
 			}
 
-			// 根据 P_cmd 反算力矩
+			// 根据 P_cmd 反算电流
 
 			for(uint8_t i = 0; i < 4; i++)
 			{
@@ -140,7 +140,7 @@ void chassis_power_control()
 				else
 					I_temp[i] = (-b - sqrtf(delta)) / (2*a);
 
-				// 扭矩限幅
+				// 电流限幅
 				if(I_temp[i] > 16000.0f)
 					I_temp[i] = 16000.0f;
 				if(I_temp[i] < -16000.0f)

@@ -13,7 +13,7 @@
 DJI_motor_instance_t *chassis_m3508[4];
 Chassis_CmdTypedef chassis_cmd;
 float target_speed[4] = {0};//底盘解算出的电机目标值
-float omega_z;
+float omega;
 
 /*TEST*/
 float test_omega;
@@ -106,12 +106,12 @@ void Mecanum_Solve(Chassis_CmdTypedef *cmd, float *ret)
 		   3\\      //2
 					
 	*/
-  omega_z = cmd->omega_z + cmd->omega_follow;
+  omega = cmd->omega_z + cmd->omega_follow;//这两omega只会有一个有数值
 
-  ret[0] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-  ret[1] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - ( cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-  ret[2] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - ( cmd->vx + cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-  ret[3] = (((omega_z * ( (LENGTH + WIDTH) / 2)) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+  ret[0] = (((omega * ( (LENGTH + WIDTH) / 2)) - (-cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+  ret[1] = (((omega * ( (LENGTH + WIDTH) / 2)) - ( cmd->vx - cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+  ret[2] = (((omega * ( (LENGTH + WIDTH) / 2)) - ( cmd->vx + cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+  ret[3] = (((omega * ( (LENGTH + WIDTH) / 2)) - (-cmd->vx + cmd->vy)) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
 }
 
 /*
@@ -171,7 +171,7 @@ void Chassis_Ctrl_Remote(void)
 {
         //底盘解算获取四个轮子转速
         Mecanum_Solve(&chassis_cmd, target_speed);
-        //获取底盘自旋速度给小陀螺用
+        //获取底盘自旋速度给小陀螺和底盘跟随用
         chassis_cmd.omega_ref = - Chassis_Get_Omega(chassis_m3508) * YAW_FEEDFORWAED_COEFFICIENT;
         //设目标值
         for(int i = 0; i < 4; i++)
@@ -215,13 +215,15 @@ void Chassis_Ctrl_Remote(void)
 //				}
 //			}
 			
-			if(chassis_cmd.omega_z)
+			if(chassis_cmd.omega_z)					//当小陀螺有转速时清空底盘跟随的值
 			{
 				chassis_cmd.omega_follow = 0;
 			}
-			else
+			else									//小陀螺没有速度时就底盘跟随
 			{
-				chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, ANGLE_REFERENCE);
+//////////////////////////////////////////////////////////////////////////////要单独调云台就注释这一句//////////////////////////////////////////////////////////////////////////////////////////////
+//				chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, ANGLE_REFERENCE);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			}
 			
 			if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)//自瞄时先关掉底盘跟随
@@ -233,9 +235,8 @@ void Chassis_Ctrl_Remote(void)
         {
             chassis_cmd.omega_z = 0;
             chassis_cmd.vx = 0;
-            chassis_cmd.vy = 0; 
+			chassis_cmd.vy = 0; 
             Chassis_Stop();
-           
         }
 
         DJI_Motor_Control();//电机pid计算及发送控制报文 , 与波弹盘拆解 

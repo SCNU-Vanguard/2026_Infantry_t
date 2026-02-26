@@ -24,9 +24,9 @@ typedef struct
     float vx;
     float vy;
 
-    float omega_z;       //底盘小陀螺时的角速度(rad/s)
-    float omega_follow;   //底盘跟随时的角速度  (rad/s)  
-	float omega_ref;		//结算出来的底盘角速度(rad/s)
+    float omega_z;      //底盘小陀螺时的角速度(rad/s)
+    float omega_follow;	//底盘跟随时的角速度  (rad/s)  
+	float omega_ref;	//小陀螺转速补偿(rad/s)
 	
     chassis_mode_e mode;
 }Chassis_CmdTypedef;	//__attribute__((__packed__))Chassis_CmdTypedef;

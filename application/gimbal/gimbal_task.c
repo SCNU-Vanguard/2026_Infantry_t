@@ -31,6 +31,8 @@
 
 #define GIMBAL_TASK_PERIOD 1 // ms
 
+uint32_t cnt_test;
+
 osThreadId_t gimbal_task_handel;
 
 //static publisher_t *gimbal_publisher;
@@ -62,6 +64,7 @@ static void Gimbal_Task(void *argument)
 		//云台遥控器控制
         Gimbal_Control_Remote();
 		
+		cnt_test++;
 		Choose_VPC_Type();
         VPC_UpdatePackets(); //接收准备发送的数据
         //NV_Pack_And_Send_Data_ROS2(&nv_aim_packet_to_nuc); //导航数据包发送

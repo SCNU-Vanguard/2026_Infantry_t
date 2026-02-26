@@ -508,10 +508,10 @@ void DM_Motor_Control(void)
         // 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
         if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
         {
-            if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
-            {
-                pid_fab = motor->receive_data.position;//速度环不使用
-            }
+//            if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
+//            {
+//                pid_fab = motor->receive_data.position;//速度环不使用
+//            }
             if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
             {
                 pid_ref += *motor_controller->speed_feedforward_ptr;
@@ -521,10 +521,24 @@ void DM_Motor_Control(void)
             {
                 pid_fab = *motor_controller->other_speed_feedback_ptr;
             }
-
+			else
+            {
+                if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
+                {
+                    pid_fab = motor->receive_data.velocity;
+                }
+                else if (motor->motor_feedback == DM_MOTOR_DIFF)
+                {
+                    pid_fab = motor->receive_data.dm_diff;
+                }
+            }
+			
             // 更新pid_ref进入下一个环
-            pid_ref = PID_Increment(motor_controller->speed_PID,
-                                    receive_data->velocity,
+//            pid_ref = PID_Increment(motor_controller->speed_PID,
+//                                    receive_data->velocity,
+//                                    pid_ref);
+			pid_ref = PID_Increment(motor_controller->speed_PID,
+                                    pid_fab,
                                     pid_ref);
         }
 

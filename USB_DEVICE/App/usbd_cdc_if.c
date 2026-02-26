@@ -33,6 +33,7 @@
 /* Private variables ---------------------------------------------------------*/
 uint8_t cdc_rx_cache[CDC_RX_CACHE_SIZE];
 uint32_t cdc_rx_len = 0;
+uint32_t cnt_CDC;
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -265,6 +266,7 @@ static int8_t CDC_Control_HS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_HS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 11 */
+  cnt_CDC++;
   /* Defensive checks */
   if (Buf == NULL || Len == NULL || *Len == 0)
   {

@@ -62,6 +62,8 @@ static void INS_Task(void *argument)
 		ins_dt = DWT_GetDeltaT(&INS_dwt_count);
 
 		INS_Calculate(ins_dt);
+		Gyro_Pitch = INS.Gyro[1] / PI;
+		Gyro_Yaw = -INS.Gyro[2] / 4.5;
 
 		INS_task_diff = osKernelGetTickCount( ) - time;
 		time          = osKernelGetTickCount( );

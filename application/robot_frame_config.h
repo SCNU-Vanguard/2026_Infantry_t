@@ -57,7 +57,7 @@
 #define PITCH_NECK_TRANSFORM_SPEED 0.0018 //伸缩变换时使用的过渡增量
 #define PITCH_NECK_TRANSFORM_JUDGEMENT 0.03 //伸缩变换时使用的判断值
 
-#define PITCH_HEAD_MIN_ANGLE  0.14f //rad , 对应伸头时的最低角度
+#define PITCH_HEAD_MIN_ANGLE  0.18f //rad , 对应伸头时的最低角度
 #define PITCH_HEAD_MID_ANGLE  -0.02f //rad , 对应中间的角度
 #define PITCH_HEAD_MAX_ANGLE  -0.38f  //rad , 对应伸出头时的最高角度
 #define PITCH_HEAD_MAX_SPEED  0.001f // rad/s
@@ -70,6 +70,6 @@
 
 #define YAW_FEEDFORWAED_COEFFICIENT 0.22	//小陀螺yaw轴前馈用的系数
 
-#define YAW_AUTO_AIMING_MAX_ADD 0.006
+#define YAW_AUTO_AIMING_MAX_ADD 0.00025f
 
 #endif /* __ROBOT_FRAME_CONFIG_H__ */

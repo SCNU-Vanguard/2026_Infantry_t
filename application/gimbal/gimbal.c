@@ -30,10 +30,15 @@ float yaw_to_mid;
 /*测试值*/
 float yaw_speed_target = 0;
 float yaw_speed_measure = 0;
+float yaw_angle_target = 0;
 float yaw_angle_measure = 0;
 float yaw_speed_out = 0;
-float pitch_head_target = 0;
-float pitch_head_measure = 0;
+
+float pitch_head_speed_target = 0;
+float pitch_head_speed_measure = 0;
+float pitch_head_angle_target = 0;
+float pitch_head_angle_measure = 0;
+float pitch_head_speed_out = 0;
 
 //////////////////////////////////////////////////缩头乌龟yaw轴pid
 //PID_t angle_pid_yaw = {
@@ -55,37 +60,65 @@ float pitch_head_measure = 0;
 //};
 
 //////////////////////////////////////////////////探出鬼头yaw轴pid
+//PID_t angle_pid_yaw = {
+//	.kp = -2.4f,        //注意pid输出方向
+//	.ki = 0.0f,
+//	.kd = -12.0f,
+//	.integral_limit = 0.0f,
+//	.output_limit = 2.0f,//2rad/s
+//	.dead_band = 0.0f,
+//};
+
+//PID_t speed_pid_yaw = {
+//	.kp = 3.6f,
+//	.ki = 0.008f,
+//	.kd = 5.1f,
+//	.integral_limit = 10.0f,
+//	.output_limit = 50.0f,
+//	.dead_band = 0.0f,
+//};
+
 PID_t angle_pid_yaw = {
-	.kp = -2.0f,        //注意pid输出方向
+	.kp = -7.0f,        //注意pid输出方向
 	.ki = 0.0f,
-	.kd = -200.0f,
-	.integral_limit = 0.1f,
-	.output_limit = 2.0f,//3rad/s
+	.kd = 0.0f,
+	.integral_limit = 0.0f,
+	.output_limit = 20.0f,//2rad/s
+	.dead_band = 0.0f,
+};
+
+PID_t speed_pid_yaw = {
+	.kp = 15.0f,
+	.ki = 0.005f,
+	.kd = 0.0f,
+	.integral_limit = 0.0f,
+	.output_limit = 20.0f,
 	.dead_band = 0.0f,
 };
 
 //PID_t angle_pid_yaw = {
-//	.kp = -2.0f,        //注意pid输出方向
+//	.kp = -1.08f,        //注意pid输出方向
 //	.ki = 0.0f,
-//	.kd = -200,
+//	.kd = -5.0,
 //	.integral_limit = 0.0f,
-//	.output_limit = 2.0f,//3rad/s
+//	.output_limit = 2.0f,//2rad/s
 //	.dead_band = 0.0f,
 //};
 
-PID_t speed_pid_yaw = {
-	.kp = 3.3f,
-	.ki = 0.003f,
-	.kd = 5.1f,
-	.integral_limit = 30.0f,
-	.output_limit = 50.0f,
-	.dead_band = 0.0f,
-};
+//PID_t speed_pid_yaw = {
+//	.kp = 3.6f,
+//	.ki = 0.0024f,
+//	.kd = 5.1f,
+//	.integral_limit = 10.0f,
+//	.output_limit = 50.0f,
+//	.dead_band = 0.0f,
+//};
 
+////////////////////////////////////////////////////////
 //PID_t angle_pid_pitch_head = {
-//	.kp = 3.8f,	//注意输出方向
+//	.kp = 3.4f,	//注意输出方向
 //	.ki = 0.0f,
-//	.kd = 100.0f,
+//	.kd = 70.0f,
 //	.integral_limit = 0.0f,
 //	.output_limit = 2.0f,
 //	.dead_band = 0.0f,
@@ -101,9 +134,9 @@ PID_t speed_pid_yaw = {
 //};
 
 PID_t angle_pid_pitch_head = {
-	.kp = 3.4f,	//注意输出方向
+	.kp = 3.6f,	//注意输出方向
 	.ki = 0.0f,
-	.kd = 70.0f,
+	.kd = 18.0f,
 	.integral_limit = 0.0f,
 	.output_limit = 2.0f,
 	.dead_band = 0.0f,
@@ -111,8 +144,8 @@ PID_t angle_pid_pitch_head = {
 
 PID_t speed_pid_pitch_head = {
 	.kp = 3.0f,
-	.ki = 0.018f,
-	.kd = 2.4f,
+	.ki = 0.02f,
+	.kd = 5.0f,
 	.integral_limit = 10.0f,
 	.output_limit = 50.0f,
 	.dead_band = 0.0f,
@@ -168,7 +201,7 @@ motor_init_config_t dm_6006_yaw = {
 
         .angle_feedback_source = OTHER_FEED, //使用imu作为角度反馈
         //.angle_feedback_source = MOTOR_FEED,//使用电机can反馈信息
-        .speed_feedback_source = MOTOR_FEED,
+        .speed_feedback_source = OTHER_FEED,
 
         .feedforward_flag = SPEED_FEEDFORWARD,//添加小陀螺转速补偿
     },
@@ -256,6 +289,7 @@ motor_init_config_t p_h_4310 = {
 
         .angle_feedback_source = OTHER_FEED,//注意 使用imu作为角度反馈
         .speed_feedback_source = MOTOR_FEED,
+//		.speed_feedback_source = OTHER_FEED,//IMU反馈
 
         .feedforward_flag = FEEDFORWARD_NONE,
     },
@@ -284,8 +318,11 @@ void Gimbal_Init(void)
         p_h_4310.controller_param_init_config.other_angle_feedback_ptr = &INS.Pitch;
     #endif
 	dm_6006_yaw.controller_param_init_config.other_angle_feedback_ptr = &INS.Yaw;//使用imu的yaw角度作为yaw电机的角度反馈
-	dm_6006_yaw.controller_param_init_config.other_speed_feedback_ptr = &bmi088_h7->gyro[2];
+//	dm_6006_yaw.controller_param_init_config.other_speed_feedback_ptr = &bmi088_h7->gyro[2];
+	dm_6006_yaw.controller_param_init_config.other_speed_feedback_ptr = &Gyro_Yaw;
     dm_6006_yaw.controller_param_init_config.speed_feedforward_ptr = &chassis_cmd.omega_ref;//添加小陀螺转速补偿
+	
+//	p_h_4310.controller_param_init_config.other_speed_feedback_ptr = &Gyro_Pitch;
 
     DM_4310_pitch_head = DM_Motor_Init(&p_h_4310);
 
@@ -339,8 +376,7 @@ void Gimbal_Control_Remote(void)
 			shoot_permission = 0;//摩擦轮不许转
 			
 			if(yaw_to_mid < 0.85 && temp_v_pitch_neck < (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2		//yaw轴不居中且还没缩头，yaw轴要转到中间
-			//&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF
-			)//并且摩擦轮停转
+			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
 			{
 				//yaw
 				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
@@ -352,8 +388,7 @@ void Gimbal_Control_Remote(void)
 				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
 			}
 			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MIN_ANGLE - PITCH_NECK_TRANSFORM_JUDGEMENT		//Yaw轴居中但还没缩头，yaw轴不动，等缩完头才动
-			//&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF
-			)//并且摩擦轮停转
+			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
 			{
 				/*p_head*/	
 				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置
@@ -466,39 +501,46 @@ void Gimbal_Control_Remote(void)
 		}
 		else if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)
 		{
-			//维持neck位置
-			temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
-			USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
-			DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
-			DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
-			
-			//head
-			temp_v_pitch_head = vs_aim_packet_from_nuc.pitch;
-			USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
-			DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
-			
-			//yaw
-//			if(fabsf(temp_v_yaw - vs_aim_packet_from_nuc.yaw) <= YAW_AUTO_AIMING_MAX_ADD)
-//			{
-//				temp_v_yaw = vs_aim_packet_from_nuc.yaw;
-//			}
-//			else if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
-//			{
-//				temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
-//			}
-//			else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
-//			{
-//				temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
-//			}
-			temp_v_yaw = vs_aim_packet_from_nuc.yaw;
-            DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+			if(DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MAX_ANGLE + PITCH_NECK_TRANSFORM_JUDGEMENT)//确认已经抬头
+			{
+				//维持neck位置
+				temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
+				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
+				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
+				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
+				
+				//head
+				temp_v_pitch_head = vs_aim_packet_from_nuc.pitch;
+				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
+				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
+				
+				//yaw
+				if(fabsf(temp_v_yaw - vs_aim_packet_from_nuc.yaw) <= YAW_AUTO_AIMING_MAX_ADD)
+				{
+					temp_v_yaw = vs_aim_packet_from_nuc.yaw;
+				}
+				else if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
+				{
+					temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
+				}
+				else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
+				{
+					temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
+				}
+
+//				temp_v_yaw = -vs_aim_packet_from_nuc.yaw;
+				
+				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+			}
 		}
 	}
 	else//云台失能
 	{
+		shoot_permission = 0;//摩擦轮不许转
+		
 		//temp_v_yaw = 0;
 		temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
-//		temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
+		temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
 		//维持当前角度但不作PID计算，pid_ref清零，不计算
 		
 		Gimbal_Stop();
@@ -512,11 +554,17 @@ void Gimbal_Control_Remote(void)
 
     //全部电机计算
     DM_Motor_Control();
-		 
+	
+	//以下变量为vofa调试使用
+	yaw_angle_target = DM_6006_yaw->motor_controller.angle_PID->target;
 	yaw_angle_measure = DM_6006_yaw->motor_controller.angle_PID->measure;
 	yaw_speed_target = DM_6006_yaw->motor_controller.speed_PID->target;
 	yaw_speed_measure = DM_6006_yaw->motor_controller.speed_PID->measure;
 	yaw_speed_out = DM_6006_yaw->motor_controller.speed_PID->output;
-	pitch_head_measure = DM_4310_pitch_head->motor_controller.angle_PID->measure;
-	pitch_head_target = DM_4310_pitch_head->motor_controller.speed_PID->target;
+	
+	pitch_head_angle_target = DM_4310_pitch_head->motor_controller.angle_PID->target;
+	pitch_head_angle_measure = DM_4310_pitch_head->motor_controller.angle_PID->measure;
+	pitch_head_speed_target = DM_4310_pitch_head->motor_controller.speed_PID->target;
+	pitch_head_speed_measure = DM_4310_pitch_head->motor_controller.speed_PID->measure;
+	pitch_head_speed_out = DM_4310_pitch_head->motor_controller.speed_PID->output;
 }

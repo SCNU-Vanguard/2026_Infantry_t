@@ -25,6 +25,8 @@
 #include "BMI088driver.h"
 
 INS_behaviour_t INS;
+float Gyro_Pitch;
+float Gyro_Yaw;
 
 const float xb[3] = {1, 0, 0};
 const float yb[3] = {0, 1, 0};
