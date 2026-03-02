@@ -2425,6 +2425,11 @@
               <FilePath>..\application\gimbal\gimbal_task.h</FilePath>
             </File>
             <File>
+              <FileName>daemon.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\alarm_system\daemon.h</FilePath>
+            </File>
+            <File>
               <FileName>shoot.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\shoot\shoot.c</FilePath>
@@ -2448,11 +2453,6 @@
               <FileName>daemon.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\alarm_system\daemon.c</FilePath>
-            </File>
-            <File>
-              <FileName>daemon.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\application\alarm_system\daemon.h</FilePath>
             </File>
             <File>
               <FileName>daemon_task.c</FileName>

@@ -202,6 +202,10 @@ void Shoot_Control_Remote(void)
 				
 				if(friction_motor[0] -> receive_flag == 0xA5 && friction_motor[1] -> receive_flag == 0xA5 && friction_motor[2] -> receive_flag == 0xA5)//摩擦轮开转后再给拨弹盘设置转速
 				{
+					if(vs_aim_packet_from_nuc.mode == 1)//火控，上位机发1时拨弹盘不允许转
+					{
+						target_shoot_frequence = 0;
+					}
 					DJI_Motor_Set_Ref(chassis_shoot_motor, target_shoot_frequence);
 				}
 			}

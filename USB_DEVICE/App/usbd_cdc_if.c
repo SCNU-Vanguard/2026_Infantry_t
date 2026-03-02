@@ -20,6 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* USER CODE BEGIN INCLUDE */
 
@@ -273,12 +275,18 @@ static int8_t CDC_Receive_HS(uint8_t* Buf, uint32_t *Len)
     USBD_CDC_ReceivePacket(&hUsbDeviceHS);
     return (USBD_OK);
   }
+  
+  // 进入中断级临界区
+  UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+  
   if(cdc_rx_len + *Len > CDC_RX_CACHE_SIZE)
   {
     cdc_rx_len = 0;
   }
   memcpy(&cdc_rx_cache[cdc_rx_len],Buf,*Len);
   cdc_rx_len += *Len;
+  
+  taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 	
 	/////////////////////////////////////////////////////////���⴮�ڵ�����
 //	char myStr[64] = {0};                                                     // ����һ�����飬���ڴ��Ҫ������ַ���

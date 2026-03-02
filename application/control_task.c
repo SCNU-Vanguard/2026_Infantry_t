@@ -52,10 +52,10 @@ void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_
 	else if ( bias_tmp < 0 )
 		bias_tmp += 2 * PI;
 	
-	if(bias_tmp < BIAS_DEADBAND)//死区
-	{
-		bias_tmp = 0;
-	}
+//	if(bias_tmp < BIAS_DEADBAND)//死区
+//	{
+//		bias_tmp = 0;
+//	}
 	
 	yaw_to_mid = cosf (bias_tmp);
 	

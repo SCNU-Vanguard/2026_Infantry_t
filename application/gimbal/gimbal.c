@@ -27,6 +27,12 @@ float temp_v_pitch_head;
 //云台Yaw轴距离中间角度的cos值，大于0.85时，Yaw轴处于较为中间的位置
 float yaw_to_mid;
 
+//初始上电位置YAW轴编码器值
+float Yaw_6006_Initial_Value;
+
+//基于上电位置编码器值规定的IMU零点，也是抬头的位置
+float Yaw_IMU_Reference;
+
 /*测试值*/
 float yaw_speed_target = 0;
 float yaw_speed_measure = 0;
@@ -79,7 +85,7 @@ float pitch_head_speed_out = 0;
 //};
 
 PID_t angle_pid_yaw = {
-	.kp = -7.0f,        //注意pid输出方向
+	.kp = -5.0f,//-7        //注意pid输出方向
 	.ki = 0.0f,
 	.kd = 0.0f,
 	.integral_limit = 0.0f,
@@ -453,6 +459,7 @@ void Gimbal_Control_Remote(void)
 		{
 			if(yaw_to_mid < 0.85 && temp_v_pitch_neck > (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2)//Yaw轴不居中并且还没抬头----不能抬头，要转到中间才行
 			{
+				//YAW
 				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
 				if ( temp_v_yaw > PI )
 						temp_v_yaw -= 2 * PI;
@@ -460,11 +467,16 @@ void Gimbal_Control_Remote(void)
 						temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
 																									
 				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+				
+				//head
+				temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
+				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
+				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 			}
 			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position > PITCH_NECK_ACTUAL_MAX_ANGLE + PITCH_NECK_TRANSFORM_JUDGEMENT)//Yaw轴居中但还没抬头，yaw轴不动，等抬完头才动
 			{
 				//head
-				temp_v_pitch_head += gimbal_cmd.v_pitch_head;
+				temp_v_pitch_head += -0.0005;
 				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
 				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 					
@@ -515,21 +527,23 @@ void Gimbal_Control_Remote(void)
 				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 				
 				//yaw
-				if(fabsf(temp_v_yaw - vs_aim_packet_from_nuc.yaw) <= YAW_AUTO_AIMING_MAX_ADD)
+				if(vs_aim_packet_from_nuc.yaw != 0)//视觉未识别到会传回0，不为0才处理数据
 				{
-					temp_v_yaw = vs_aim_packet_from_nuc.yaw;
-				}
-				else if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
-				{
-					temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
-				}
-				else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
-				{
-					temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
-				}
+					if(fabsf(temp_v_yaw - vs_aim_packet_from_nuc.yaw) <= YAW_AUTO_AIMING_MAX_ADD)
+					{
+						temp_v_yaw = vs_aim_packet_from_nuc.yaw;
+					}
+					else if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
+					{
+						temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
+					}
+					else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
+					{
+						temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
+					}
 
-//				temp_v_yaw = -vs_aim_packet_from_nuc.yaw;
-				
+//					temp_v_yaw = -vs_aim_packet_from_nuc.yaw;
+				}
 				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
 			}
 		}

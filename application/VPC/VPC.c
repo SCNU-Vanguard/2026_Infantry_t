@@ -62,7 +62,7 @@ void VPC_UpdatePackets(void)
 //  vs_aim_packet_to_nuc.pitch_vel = gimbal_motor_pitch->measure.speed;
   vs_aim_packet_to_nuc.pitch = 0;
   vs_aim_packet_to_nuc.pitch_vel = 0;
-  vs_aim_packet_to_nuc.bullet_speed = 20; // 未定
+  vs_aim_packet_to_nuc.bullet_speed = 22.75; // 未定
   vs_aim_packet_to_nuc.bullet_count = 0;  // 未定
 
   /*深圳大学版本*/
@@ -96,25 +96,66 @@ void VPC_UpdatePackets(void)
 /*根据帧头选择对应的数据处理*/
 void Choose_VPC_Type(void)
 {
-  uint16_t frame_len = cdc_rx_len;
+  taskENTER_CRITICAL();
+	
+  uint16_t cache_len = cdc_rx_len;
+  if (cache_len == 0)
+  {
+  	taskEXIT_CRITICAL();
+  	return;
+  }
+  
+//  uint16_t frame_len = cdc_rx_len;
 
   /* 拷贝完整帧 */
-  memcpy(frame_buf, cdc_rx_cache, frame_len);
+  memcpy(frame_buf, cdc_rx_cache, cache_len);
+  
+  taskEXIT_CRITICAL();
+  
+  ////////////////////////////帧头查找///////////////////////////////////
+  uint16_t valid_head_idx = 0;
+  // 遍历缓存，找到第一个有效帧头（0xA5 或 S+P）
+  while (valid_head_idx < cache_len - 1) // 留1字节给 S+P 的第二个字符
+  {
+      if (
+		  //frame_buf[valid_head_idx] == 0xA5 || 
+          (frame_buf[valid_head_idx] == 'S' && frame_buf[valid_head_idx+1] == 'P'))
+      {
+          break; // 找到有效帧头，退出循环
+      }
+      valid_head_idx++; // 无效数据，索引后移
+  }
+
+  // 若找到的帧头位置过靠后，导致剩余数据不足一帧，直接消费无效数据
+  if (valid_head_idx > 0)
+  {
+      Consume_CDC_Cache(valid_head_idx); // 消费掉帧头前的无效数据
+      return; // 本次无有效帧，直接返回，下次再处理
+  }
+  /////////////////////////////////////////////////////////////////////////
 
   /*根据帧头来判断接收到的是哪个数据包*/
   /*导航部分*/
   if (frame_buf[0] == 0xA5)
   {
-    NV_UnPack_Data_ROS2(frame_buf, &nv_aim_packet_from_nuc, sizeof(nv_receive_packet_t));
+	uint16_t frame_len = sizeof(nv_receive_packet_t);
+	  
+	if (cache_len >= frame_len)// 确保数据足够一帧
+	{
+	  NV_UnPack_Data_ROS2(frame_buf, &nv_aim_packet_from_nuc, frame_len);
+	  Consume_CDC_Cache(frame_len);// 消费核心缓存：移除已处理的帧字节
+    }
   }
   /*视觉部分（同济大学版本）*/
   else if (frame_buf[0] == 'S' && frame_buf[1] == 'P')
   {
-    // memcpy(vs_buf_receive_from_nuc, frame_buf, sizeof(vs_receive_packet_t));
-    VS_UnPack_Data_ROS2(frame_buf, &vs_aim_packet_from_nuc, sizeof(vs_receive_packet_t));
-//    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//    xSemaphoreGiveFromISR(g_xSemVPC, &xHigherPriorityTaskWoken);
-//    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	uint16_t frame_len = sizeof(vs_receive_packet_t);
+	  
+	if (cache_len >= frame_len)// 确保数据足够一帧
+	{
+	  VS_UnPack_Data_ROS2(frame_buf, &vs_aim_packet_from_nuc, frame_len);
+	  Consume_CDC_Cache(frame_len);// 消费核心缓存：移除已处理的帧字节
+	}
   }
 
   // /* 移除已处理数据 */
@@ -153,4 +194,22 @@ void Choose_VPC_Type(void)
   //     }
   //   }
   // }
+}
+
+void Consume_CDC_Cache(uint16_t consume_len)
+{
+    taskENTER_CRITICAL();
+	
+    if (consume_len >= cdc_rx_len)// 全部处理完，直接清空长度
+	{
+        cdc_rx_len = 0;
+    }
+	else// 未处理完，将剩余数据移动到缓存起始位置
+	{
+        memmove(cdc_rx_cache, &cdc_rx_cache[consume_len], cdc_rx_len - consume_len);
+        
+        cdc_rx_len -= consume_len;// 更新剩余长度
+    }
+	
+    taskEXIT_CRITICAL();
 }

@@ -30,5 +30,6 @@ void VOFA_Display_Yaw(void);
 void VOFA_Display_Speed(void);
 void VOFA_Display_Power(void);
 void VOFA_Display_Shoot(void);
+void VOFA_Displat_AutoAiming(void);
 
 #endif /* __PROCOTOL_H__ */

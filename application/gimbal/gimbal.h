@@ -102,7 +102,8 @@ extern float pitch_head_speed_measure;
 extern float pitch_head_angle_target;
 extern float pitch_head_angle_measure;
 extern float pitch_head_speed_out;
-
+extern float Yaw_6006_Initial_Value;
+extern float Yaw_IMU_Reference;
 /**/
 void Gimbal_Init(void);
 void Gimbal_Control_Remote(void);

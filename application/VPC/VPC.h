@@ -18,5 +18,6 @@ extern void VPC_Init(void);
 extern void VPC_UpdatePackets(void);
 extern void Choose_VPC_Type(void);
 //extern void VPC_SendTarget(void);
+void Consume_CDC_Cache(uint16_t consume_len);
 
 #endif /* __VPC_H__ */

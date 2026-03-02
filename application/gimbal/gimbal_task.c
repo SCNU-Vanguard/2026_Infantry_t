@@ -58,6 +58,10 @@ uint32_t gimbal_task_diff;
 static void Gimbal_Task(void *argument)
 {
     uint32_t time = osKernelGetTickCount();
+	Yaw_6006_Initial_Value = DM_6006_yaw -> receive_data.position;//获取初始上电位置编码器值用于处理IMU零点
+	Yaw_IMU_Reference = Yaw_6006_Initial_Value - ANGLE_REFERENCE;
+	
+//	temp_v_yaw = Yaw_IMU_Reference;
 
     for (;;)
     {

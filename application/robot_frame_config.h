@@ -38,7 +38,10 @@
     
 #define WHEEL_RADIUS 0.077f	//驱动轮半径（diameter）
 
-#define ANGLE_REFERENCE -1.00836813 //底盘坐标系转云台坐标系角度参考值
+#define ANGLE_REFERENCE -1.00414968 //底盘坐标系转云台坐标系角度参考值
+#define ANGLE_STAND -0.9321473	//底盘跟随的角度，此角度才能抬头
+
+#define OMEGA_FOLLOW_MAX_ADD 0.0005f	//底盘跟随斜坡
     
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.005   //660 ~ -660 
@@ -70,6 +73,6 @@
 
 #define YAW_FEEDFORWAED_COEFFICIENT 0.22	//小陀螺yaw轴前馈用的系数
 
-#define YAW_AUTO_AIMING_MAX_ADD 0.00025f
+#define YAW_AUTO_AIMING_MAX_ADD 0.003f//0.001	自瞄斜坡
 
 #endif /* __ROBOT_FRAME_CONFIG_H__ */

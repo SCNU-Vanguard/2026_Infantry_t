@@ -63,8 +63,9 @@ void VOFA_Display_Yaw(void)
 	vofa_data_view[3] = yaw_speed_measure;
 	vofa_data_view[4] = yaw_speed_out;
 	vofa_data_view[5] = -INS.Gyro[2] / 4.5;
+	vofa_data_view[6] = vs_aim_packet_from_nuc.yaw;
 	
-	VOFA_JustFloat(vofa_data_view, 6);
+	VOFA_JustFloat(vofa_data_view, 7);
 }
 
 void VOFA_Display_Speed(void)
@@ -124,4 +125,11 @@ void VOFA_Display_Shoot(void)
 	vofa_data_view[1] = -(float)target_shoot_frequence;
 	
 	VOFA_JustFloat(vofa_data_view, 2);
+}
+
+void VOFA_Displat_AutoAiming(void)
+{
+	vofa_data_view[0] = vs_aim_packet_from_nuc.yaw;
+	
+	VOFA_JustFloat(vofa_data_view, 1);
 }

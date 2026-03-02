@@ -14,6 +14,7 @@ DJI_motor_instance_t *chassis_m3508[4];
 Chassis_CmdTypedef chassis_cmd;
 float target_speed[4] = {0};//底盘解算出的电机目标值
 float omega;
+float temp_omega_follow;
 
 /*TEST*/
 float test_omega;
@@ -38,9 +39,9 @@ PID_t chassis_3508_speed_pid = {
 //};
 
 PID_t omega_follow_pid = {
-    .kp = 20.0f,
-    .ki = 0.0f,
-    .kd = 1200.0f,
+    .kp = 5.0f,
+    .ki = 0.05f,
+    .kd = 0.0f,
     .output_limit = 5.0f, 
     .integral_limit = 0.0f,
     .dead_band = 0.01f,
@@ -215,21 +216,34 @@ void Chassis_Ctrl_Remote(void)
 //				}
 //			}
 			
-			if(chassis_cmd.omega_z)					//当小陀螺有转速时清空底盘跟随的值
+			if(chassis_cmd.omega_z || gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)					//当小陀螺有转速时清空底盘跟随的值
 			{
 				chassis_cmd.omega_follow = 0;
 			}
 			else									//小陀螺没有速度时就底盘跟随
 			{
-//////////////////////////////////////////////////////////////////////////////要单独调云台就注释这一句//////////////////////////////////////////////////////////////////////////////////////////////
-//				chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, ANGLE_REFERENCE);
+//////////////////////////////////////////////////////////////////////////////要单独调云台就注释这一段//////////////////////////////////////////////////////////////////////////////////////////////
+				if(fabsf(temp_omega_follow - ANGLE_STAND) <= OMEGA_FOLLOW_MAX_ADD)
+				{
+					temp_omega_follow = ANGLE_STAND;
+				}
+				else if(temp_omega_follow < ANGLE_STAND)
+				{
+					temp_omega_follow += OMEGA_FOLLOW_MAX_ADD;
+				}
+				else if(temp_v_yaw > ANGLE_STAND)
+				{
+					temp_omega_follow -= OMEGA_FOLLOW_MAX_ADD;
+				}
+				
+				chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, temp_omega_follow);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			}
 			
-			if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)//自瞄时先关掉底盘跟随
-			{
-				chassis_cmd.omega_follow = 0;
-			}
+//			if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)//自瞄时先关掉底盘跟随
+//			{
+//				chassis_cmd.omega_follow = 0;
+//			}
         }
         else if(chassis_cmd.mode == STOP_C)
         {
