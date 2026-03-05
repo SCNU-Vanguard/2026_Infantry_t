@@ -479,193 +479,195 @@ void DM_Motor_Control(void)
             pid_ref *= -1; // 目标值设置反转
         }
 
-        // pid_ref会顺次通过被启用的闭环充当数据的载体
-        // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
-        // dm_diff的值需要自己另外做处理，比如使其指向视觉发送的目标装甲板的偏差值
-        if ((motor_setting->close_loop_type & (ANGLE_LOOP | SPEED_LOOP)) && (motor_setting->outer_loop_type == ANGLE_LOOP))
-        {
-            if (motor_setting->angle_feedback_source == OTHER_FEED)
-            {
-                pid_fab = *motor_controller->other_angle_feedback_ptr;
-            }
-            else
-            {
-                if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
-                {
-                    pid_fab = motor->receive_data.position;
-                }
-                else if (motor->motor_feedback == DM_MOTOR_DIFF)
-                {
-                    pid_fab = motor->receive_data.dm_diff;
-                }
-            }
-            // 更新pid_ref进入下一个环
-            pid_ref = PID_Position(motor_controller->angle_PID,
-                                   pid_fab,
-                                   pid_ref);
-        }
+		if(motor->motor_climb_hill_state == 0)
+		{
+			// pid_ref会顺次通过被启用的闭环充当数据的载体
+			// 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
+			// dm_diff的值需要自己另外做处理，比如使其指向视觉发送的目标装甲板的偏差值
+			if ((motor_setting->close_loop_type & (ANGLE_LOOP | SPEED_LOOP)) && (motor_setting->outer_loop_type == ANGLE_LOOP))
+			{
+				if (motor_setting->angle_feedback_source == OTHER_FEED)
+				{
+					pid_fab = *motor_controller->other_angle_feedback_ptr;
+				}
+				else
+				{
+					if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
+					{
+						pid_fab = motor->receive_data.position;
+					}
+					else if (motor->motor_feedback == DM_MOTOR_DIFF)
+					{
+						pid_fab = motor->receive_data.dm_diff;
+					}
+				}
+				// 更新pid_ref进入下一个环
+				pid_ref = PID_Position(motor_controller->angle_PID,
+									   pid_fab,
+									   pid_ref);
+			}
 
-        // 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
-        if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
-        {
-//            if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
-//            {
-//                pid_fab = motor->receive_data.position;//速度环不使用
-//            }
-            if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
-            {
-                pid_ref += *motor_controller->speed_feedforward_ptr;
-            }
+			// 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
+			if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
+			{
+	//            if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
+	//            {
+	//                pid_fab = motor->receive_data.position;//速度环不使用
+	//            }
+				if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
+				{
+					pid_ref += *motor_controller->speed_feedforward_ptr;
+				}
 
-            if (motor_setting->speed_feedback_source == OTHER_FEED)
-            {
-                pid_fab = *motor_controller->other_speed_feedback_ptr;
-            }
-			else
-            {
-                if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
-                {
-                    pid_fab = motor->receive_data.velocity;
-                }
-                else if (motor->motor_feedback == DM_MOTOR_DIFF)
-                {
-                    pid_fab = motor->receive_data.dm_diff;
-                }
-            }
-			
-            // 更新pid_ref进入下一个环
-//            pid_ref = PID_Increment(motor_controller->speed_PID,
-//                                    receive_data->velocity,
-//                                    pid_ref);
-			pid_ref = PID_Increment(motor_controller->speed_PID,
-                                    pid_fab,
-                                    pid_ref);
-        }
+				if (motor_setting->speed_feedback_source == OTHER_FEED)
+				{
+					pid_fab = *motor_controller->other_speed_feedback_ptr;
+				}
+				else
+				{
+					if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
+					{
+						pid_fab = motor->receive_data.velocity;
+					}
+					else if (motor->motor_feedback == DM_MOTOR_DIFF)
+					{
+						pid_fab = motor->receive_data.dm_diff;
+					}
+				}
+				
+				// 更新pid_ref进入下一个环
+	//            pid_ref = PID_Increment(motor_controller->speed_PID,
+	//                                    receive_data->velocity,
+	//                                    pid_ref);
+				pid_ref = PID_Increment(motor_controller->speed_PID,
+										pid_fab,
+										pid_ref);
+			}
 
-        // 计算扭矩环,目前只要启用了扭矩环就计算,不管外层闭环是什么,并且扭矩只有电机自身传感器的反馈
-        if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
-        {
-            pid_ref += *motor_controller->torque_feedforward_ptr;
-        }
-        if (motor_setting->close_loop_type & TORQUE_LOOP)
-        {
-            pid_ref = PID_Position(motor_controller->torque_PID,
-                                   receive_data->torque,
-                                   pid_ref);
-        }
+			// 计算扭矩环,目前只要启用了扭矩环就计算,不管外层闭环是什么,并且扭矩只有电机自身传感器的反馈
+			if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
+			{
+				pid_ref += *motor_controller->torque_feedforward_ptr;
+			}
+			if (motor_setting->close_loop_type & TORQUE_LOOP)
+			{
+				pid_ref = PID_Position(motor_controller->torque_PID,
+									   receive_data->torque,
+									   pid_ref);
+			}
 
-        if (motor_setting->feedback_reverse_flag == FEEDBACK_DIRECTION_REVERSE)
-        {
-            pid_ref *= -1; // 输出值设置反转
-        }
+			if (motor_setting->feedback_reverse_flag == FEEDBACK_DIRECTION_REVERSE)
+			{
+				pid_ref *= -1; // 输出值设置反转
+			}
 
-        /* ------------------------------digital_pid------------------------------------*/
+			/* ------------------------------digital_pid------------------------------------*/
 
-        /* ------------------------------handler------------------------------------*/
-        // 获取最终输出
-        // 判断模式再发送
-        if (motor->dm_mode == SPEED_MODE)
-        {
-            // 若该电机处于停止状态,直接将buff置零
-            if (motor->motor_state_flag == MOTOR_DISABLE)
-            {
-                motor->transmit_data.velocity_des = 0.0f;
-                pid_ref = 0.0f;
-            }
-            else
-            {
-                motor->transmit_data.velocity_des = pid_ref;
-            }
+			/* ------------------------------handler------------------------------------*/
+			// 获取最终输出
+			// 判断模式再发送
+			if (motor->dm_mode == SPEED_MODE)
+			{
+				// 若该电机处于停止状态,直接将buff置零
+				if (motor->motor_state_flag == MOTOR_DISABLE)
+				{
+					motor->transmit_data.velocity_des = 0.0f;
+					pid_ref = 0.0f;
+				}
+				else
+				{
+					motor->transmit_data.velocity_des = pid_ref;
+				}
 
-            DM_Speed_Ctrl(motor, motor->transmit_data.velocity_des);
-        }
+				DM_Speed_Ctrl(motor, motor->transmit_data.velocity_des);
+			}
 
-        else if (motor->dm_mode == POS_MODE)
-        {
-            // 若该电机处于停止状态,直接将buff置零
-            if (motor->motor_state_flag == MOTOR_DISABLE)
-            {
-                motor->transmit_data.position_des = motor->receive_data.position;
-                motor->transmit_data.velocity_des = 0.0f;
-                pid_ref = 0.0f;
-            }
-            else
-            {
-                motor->transmit_data.position_des = pid_ref; //控制位置
-            }
+			else if (motor->dm_mode == POS_MODE)
+			{
+				// 若该电机处于停止状态,直接将buff置零
+				if (motor->motor_state_flag == MOTOR_DISABLE)
+				{
+					motor->transmit_data.position_des = motor->receive_data.position;
+					motor->transmit_data.velocity_des = 0.0f;
+					pid_ref = 0.0f;
+				}
+				else
+				{
+					motor->transmit_data.position_des = pid_ref; //控制位置
+				}
 
-            DM_Pos_Speed_Ctrl(motor,
-                              motor->transmit_data.position_des,
-                              motor->transmit_data.velocity_des);
-        }
+				DM_Pos_Speed_Ctrl(motor,
+								  motor->transmit_data.position_des,
+								  motor->transmit_data.velocity_des);
+			}
 
-        else if (motor->dm_mode == MIT_MODE)
-        {
-            // 若该电机处于停止状态,直接将buff置零
-            if (motor->motor_state_flag == MOTOR_DISABLE)
-            {
-                PID_Init(motor_controller->angle_PID);
-                PID_Init(motor_controller->speed_PID);
-                motor->transmit_data.position_des = motor->receive_data.position;
-                motor->transmit_data.velocity_des = 0.0f;
-                motor->transmit_data.torque_des = 0.0f;
-                pid_ref = 0.0f;
-            }
+			else if (motor->dm_mode == MIT_MODE)
+			{
+				// 若该电机处于停止状态,直接将buff置零
+				if (motor->motor_state_flag == MOTOR_DISABLE)
+				{
+					PID_Init(motor_controller->angle_PID);
+					PID_Init(motor_controller->speed_PID);
+					motor->transmit_data.position_des = motor->receive_data.position;
+					motor->transmit_data.velocity_des = 0.0f;
+					motor->transmit_data.torque_des = 0.0f;
+					pid_ref = 0.0f;
+				}
+				// 这里不提供其他的设计，只有纯力矩控制，如有需求在此修改代码逻辑即可
+				motor->transmit_data.position_des = 0.0f;
+				motor->transmit_data.velocity_des = 0.0f;
+				motor->transmit_data.Kp = 0;
+				motor->transmit_data.Kd = 0;
 
-            // 这里不提供其他的设计，只有纯力矩控制，如有需求在此修改代码逻辑即可
-            motor->transmit_data.position_des = 0.0f;
-            motor->transmit_data.velocity_des = 0.0f;
-            motor->transmit_data.Kp = 0;
-            motor->transmit_data.Kd = 0;
+				if (motor->motor_settings.outer_loop_type == ANGLE_LOOP)
+				{
+					motor->transmit_data.torque_des = pid_ref;
 
-            if (motor->motor_settings.outer_loop_type == ANGLE_LOOP)
-            {
-                motor->transmit_data.torque_des = pid_ref;
+					DM_MIT_Ctrl(motor,
+								motor->transmit_data.position_des,
+								motor->transmit_data.velocity_des,
+								motor->transmit_data.Kp,
+								motor->transmit_data.Kp,
+								motor->transmit_data.torque_des);
+				}
+				if (motor->motor_settings.outer_loop_type == SPEED_LOOP)
+				{
+					motor->transmit_data.torque_des = pid_ref;
 
-                DM_MIT_Ctrl(motor,
-                            motor->transmit_data.position_des,
-                            motor->transmit_data.velocity_des,
-                            motor->transmit_data.Kp,
-                            motor->transmit_data.Kp,
-                            motor->transmit_data.torque_des);
-            }
-            if (motor->motor_settings.outer_loop_type == SPEED_LOOP)
-            {
-                motor->transmit_data.torque_des = pid_ref;
+					DM_MIT_Ctrl(motor,
+								motor->transmit_data.position_des,
+								motor->transmit_data.velocity_des,
+								motor->transmit_data.Kp,
+								motor->transmit_data.Kp,
+								motor->transmit_data.torque_des);
+				}
+				if (motor->motor_settings.outer_loop_type == TORQUE_LOOP)
+				{
+					motor->transmit_data.torque_des = pid_ref;
 
-                DM_MIT_Ctrl(motor,
-                            motor->transmit_data.position_des,
-                            motor->transmit_data.velocity_des,
-                            motor->transmit_data.Kp,
-                            motor->transmit_data.Kp,
-                            motor->transmit_data.torque_des);
-            }
-            if (motor->motor_settings.outer_loop_type == TORQUE_LOOP)
-            {
-                motor->transmit_data.torque_des = pid_ref;
+					DM_MIT_Ctrl(motor,
+								motor->transmit_data.position_des,
+								motor->transmit_data.velocity_des,
+								motor->transmit_data.Kp,
+								motor->transmit_data.Kp,
+								motor->transmit_data.torque_des);
+				}
+			}
+			else if (motor->dm_mode == DM124_MODE)
+			{
+				// 若该电机处于停止状态,直接将buff置零
+				if (motor->motor_state_flag == MOTOR_DISABLE)
+				{
+					pid_ref = 0.0f;
+				}
+				else
+				{
+					motor->transmit_data.velocity_des = pid_ref;
+				}
 
-                DM_MIT_Ctrl(motor,
-                            motor->transmit_data.position_des,
-                            motor->transmit_data.velocity_des,
-                            motor->transmit_data.Kp,
-                            motor->transmit_data.Kp,
-                            motor->transmit_data.torque_des);
-            }
-        }
-        else if (motor->dm_mode == DM124_MODE)
-        {
-            // 若该电机处于停止状态,直接将buff置零
-            if (motor->motor_state_flag == MOTOR_DISABLE)
-            {
-                pid_ref = 0.0f;
-            }
-            else
-            {
-                motor->transmit_data.velocity_des = pid_ref;
-            }
-
-            DM_DM124_Ctrl(motor,
-                          motor->transmit_data.velocity_des);
-        }
+				DM_DM124_Ctrl(motor,
+							  motor->transmit_data.velocity_des);
+			}
+		}
     }
 }

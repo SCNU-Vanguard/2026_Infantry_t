@@ -104,8 +104,11 @@ extern float pitch_head_angle_measure;
 extern float pitch_head_speed_out;
 extern float Yaw_6006_Initial_Value;
 extern float Yaw_IMU_Reference;
+extern uint8_t climb_hill;
 /**/
 void Gimbal_Init(void);
 void Gimbal_Control_Remote(void);
+void Climbing_Hill(void);
+void Not_Climbing_Hill(void);
 
 #endif /* __GIMBAL_H__ */

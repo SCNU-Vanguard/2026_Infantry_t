@@ -67,6 +67,8 @@
 #define PITCH_HEAD_TRANSFORM_SPEED 0.0016 //伸缩变换时使用的过渡增量
 #define PITCH_HEAD_TRANSFORM_JUDGEMENT 0.05 //伸缩变换时使用的判断值
 #define PITCH_HEAD_COEFFICIENT 1.5 //遥控器增量乘的系数
+#define PITCH_HEAD_CLIMBING_ANGLE -0.814220786 //进入爬坡状态的编码器值
+#define PITCH_HEAD_CLIMBING_JUDGEMENT 0.005 //进入爬坡状态使用的判断值
 
 #define YAW_MAX_SPEED 2.0f //rad/s
 #define YAW_COEFFICIENT 0.6 //遥控器增量乘的系数

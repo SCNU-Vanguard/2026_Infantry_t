@@ -17,8 +17,6 @@ DM_motor_t *DM_4310_pitch_head;//云台头，imu串级控制
 DM_motor_t *DM_4310_pitch_neck;//云台脖子，单位置环
 DM_motor_t *DM_6006_yaw;//云台yaw电机，imu串级控制
 
-
-
 /*云台目标值*/
 float temp_v_yaw;
 float temp_v_pitch_neck;
@@ -359,6 +357,16 @@ void Gimbal_Stop(void)
     DM_Motor_Stop(DM_6006_yaw);
 }
 
+void Climbing_Hill(void)
+{
+	DM_4310_pitch_head -> motor_climb_hill_state = CLIMBING_HILL;
+}
+
+void Not_Climbing_Hill(void)
+{
+	DM_4310_pitch_head -> motor_climb_hill_state = NOT_CLIMBING_HILL;
+}
+
 void Gimbal_Control_Remote(void)
 {
 	//获取初始pitch角度
@@ -446,6 +454,11 @@ void Gimbal_Control_Remote(void)
 				}
 				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
 				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
+				
+				if(fabs(DM_4310_pitch_head->receive_data.position - PITCH_HEAD_CLIMBING_ANGLE) < PITCH_HEAD_CLIMBING_JUDGEMENT)
+				{
+					Climbing_Hill();//进入爬坡状态
+				}
 
 				/*p_neck*/ /*POS_mode 做特殊处理*/
 				temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
@@ -457,6 +470,8 @@ void Gimbal_Control_Remote(void)
 
 		else if(gimbal_cmd.ctrl_mode == STAND_NECK)
 		{
+			Not_Climbing_Hill();//清除爬坡状态
+			
 			if(yaw_to_mid < 0.85 && temp_v_pitch_neck > (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2)//Yaw轴不居中并且还没抬头----不能抬头，要转到中间才行
 			{
 				//YAW
@@ -551,6 +566,8 @@ void Gimbal_Control_Remote(void)
 	else//云台失能
 	{
 		shoot_permission = 0;//摩擦轮不许转
+		
+		Not_Climbing_Hill();//清除爬坡状态
 		
 		//temp_v_yaw = 0;
 		temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;

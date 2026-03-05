@@ -145,7 +145,7 @@ float Chassis_Get_Omega_Ref(DJI_motor_instance_t *M3508[])
  */
 float Chassis_Get_Omega_Follow(void)
 {
-	if(fabsf(temp_omega_follow - ANGLE_STAND) <= OMEGA_FOLLOW_MAX_ADD)
+	if(fabs(temp_omega_follow - ANGLE_STAND) <= OMEGA_FOLLOW_MAX_ADD)
 	{
 		temp_omega_follow = ANGLE_STAND;
 	}

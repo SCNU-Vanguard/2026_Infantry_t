@@ -112,6 +112,12 @@ typedef enum
 
 typedef enum
 {
+	NOT_CLIMBING_HILL = 0,
+	CLIMBING_HILL  = 1,
+} motor_climb_hill_state_e;
+
+typedef enum
+{
 	OTHER,
 	GM6020,
 	M3508,

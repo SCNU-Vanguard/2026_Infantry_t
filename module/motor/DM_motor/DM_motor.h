@@ -94,6 +94,7 @@ typedef struct
 
 	motor_working_type_e motor_state_flag; // 启停标志
     motor_error_detection_type_e motor_error_detection; // 异常检测
+	motor_climb_hill_state_e motor_climb_hill_state;//过洞即缩头时上下坡状态
 
 	DM_motor_callback_t receive_data;		// 电机反馈值
 	DM_motor_fillmessage_t transmit_data;	// 电机目标值
