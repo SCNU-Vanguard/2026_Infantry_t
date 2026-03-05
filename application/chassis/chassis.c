@@ -15,6 +15,7 @@ Chassis_CmdTypedef chassis_cmd;
 float target_speed[4] = {0};//底盘解算出的电机目标值
 float omega;
 float temp_omega_follow;
+float omega_follow_cal;
 
 /*TEST*/
 float test_omega;
@@ -121,7 +122,7 @@ void Mecanum_Solve(Chassis_CmdTypedef *cmd, float *ret)
  * @retval 	底盘自旋速度，rad/s
  * @todo    按需增加对里程的解算
  */
-float Chassis_Get_Omega (DJI_motor_instance_t *M3508[])
+float Chassis_Get_Omega_Ref(DJI_motor_instance_t *M3508[])
 {
 	uint8_t i = 0;
 	float v_total = 0;//四个3508转子的角速度之和
@@ -135,6 +136,36 @@ float Chassis_Get_Omega (DJI_motor_instance_t *M3508[])
 	v_total = v_total / 60;                      // 转子 --> 转轴   rpm-->rps
 	v_total = v_total * WHEEL_RADIUS / ( ( LENGTH + WIDTH) / 2) / M3508_REDUCTION_RATIO * 2 * PI; // rps-->rad/s （轮子的线速度 = 底盘的线速度） 单位变换时要调内环PID
 	return v_total;
+}
+
+/*
+ * @brief  	获取底盘跟随角度
+ * @param	无
+ * @retval 	底盘跟随角度
+ */
+float Chassis_Get_Omega_Follow(void)
+{
+	if(fabsf(temp_omega_follow - ANGLE_STAND) <= OMEGA_FOLLOW_MAX_ADD)
+	{
+		temp_omega_follow = ANGLE_STAND;
+	}
+	else if(temp_omega_follow < ANGLE_STAND)
+	{
+		temp_omega_follow += OMEGA_FOLLOW_MAX_ADD;
+	}
+	else if(temp_v_yaw > ANGLE_STAND)
+	{
+		temp_omega_follow -= OMEGA_FOLLOW_MAX_ADD;
+	}
+	
+	omega_follow_cal = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, temp_omega_follow);
+	
+	if(chassis_cmd.omega_z || gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)					//当小陀螺有转速时清空底盘跟随的值
+	{
+		omega_follow_cal = 0;
+	}
+	
+	return omega_follow_cal;
 }
 
 /*
@@ -170,15 +201,17 @@ void Chassis_Stop(void)
 
 void Chassis_Ctrl_Remote(void)
 {
-        //底盘解算获取四个轮子转速
-        Mecanum_Solve(&chassis_cmd, target_speed);
-        //获取底盘自旋速度给小陀螺和底盘跟随用
-        chassis_cmd.omega_ref = - Chassis_Get_Omega(chassis_m3508) * YAW_FEEDFORWAED_COEFFICIENT;
-        //设目标值
-        for(int i = 0; i < 4; i++)
-        {
-			
-			//////////////////////////////////////调试用
+	//底盘解算获取四个轮子转速
+	Mecanum_Solve(&chassis_cmd, target_speed);
+	//获取底盘自旋速度给小陀螺
+	chassis_cmd.omega_ref = - Chassis_Get_Omega_Ref(chassis_m3508) * YAW_FEEDFORWAED_COEFFICIENT;
+	//获取底盘跟随旋转角
+	//chassis_cmd.omega_follow = Chassis_Get_Omega_Follow();
+	//设目标值
+	for(int i = 0; i < 4; i++)
+	{
+		
+		//////////////////////////////////////调试用
 //			if(target_speed[i] < -10)
 //			{
 //				target_speed[i] = -200;
@@ -187,71 +220,30 @@ void Chassis_Ctrl_Remote(void)
 //			{
 //				target_speed[i] = 200;
 //			}
-			//////////////////////////////////////////////////
-			
-            DJI_Motor_Set_Ref(chassis_m3508[i], target_speed[i]);
-        }
+		//////////////////////////////////////////////////
+		
+		DJI_Motor_Set_Ref(chassis_m3508[i], target_speed[i]);
+	}
 
-        //模式处理
-        if(chassis_cmd.mode == SPIN)
-        {
+	//模式处理
+	if(chassis_cmd.mode == SPIN)
+	{
 //            Chassis_Enable();
 //            chassis_cmd.omega_z = 0.3f;
-        }
+	}
 
-        else if(chassis_cmd.mode == FOLLOW)
-        {
-            Chassis_Enable();
-			
-//			//底盘跟随
-//			if(gimbal_cmd.status)
-//			{
-//				if(gimbal_cmd.ctrl_mode == SIT_NECK)//脖子收缩用底盘跟随
-//				{
-//					chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, ANGLE_REFERENCE);
-//				}
-//				else//脖子伸出和自瞄就用底盘坐标系转云台坐标系
-//				{
-//					chassis_cmd.omega_follow = 0;
-//				}
-//			}
-			
-			if(chassis_cmd.omega_z || gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)					//当小陀螺有转速时清空底盘跟随的值
-			{
-				chassis_cmd.omega_follow = 0;
-			}
-			else									//小陀螺没有速度时就底盘跟随
-			{
-//////////////////////////////////////////////////////////////////////////////要单独调云台就注释这一段//////////////////////////////////////////////////////////////////////////////////////////////
-				if(fabsf(temp_omega_follow - ANGLE_STAND) <= OMEGA_FOLLOW_MAX_ADD)
-				{
-					temp_omega_follow = ANGLE_STAND;
-				}
-				else if(temp_omega_follow < ANGLE_STAND)
-				{
-					temp_omega_follow += OMEGA_FOLLOW_MAX_ADD;
-				}
-				else if(temp_v_yaw > ANGLE_STAND)
-				{
-					temp_omega_follow -= OMEGA_FOLLOW_MAX_ADD;
-				}
-				
-				chassis_cmd.omega_follow = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, temp_omega_follow);
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			}
-			
-//			if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)//自瞄时先关掉底盘跟随
-//			{
-//				chassis_cmd.omega_follow = 0;
-//			}
-        }
-        else if(chassis_cmd.mode == STOP_C)
-        {
-            chassis_cmd.omega_z = 0;
-            chassis_cmd.vx = 0;
-			chassis_cmd.vy = 0; 
-            Chassis_Stop();
-        }
+	else if(chassis_cmd.mode == FOLLOW)
+	{
+		Chassis_Enable();
+	}
+	else if(chassis_cmd.mode == STOP_C)
+	{
+		chassis_cmd.omega_z = 0;
+		chassis_cmd.omega_follow = 0;
+		chassis_cmd.vx = 0;
+		chassis_cmd.vy = 0; 
+		Chassis_Stop();
+	}
 
-        DJI_Motor_Control();//电机pid计算及发送控制报文 , 与波弹盘拆解 
+	DJI_Motor_Control();//电机pid计算及发送控制报文 , 与波弹盘拆解 
 }

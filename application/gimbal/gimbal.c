@@ -581,4 +581,5 @@ void Gimbal_Control_Remote(void)
 	pitch_head_speed_target = DM_4310_pitch_head->motor_controller.speed_PID->target;
 	pitch_head_speed_measure = DM_4310_pitch_head->motor_controller.speed_PID->measure;
 	pitch_head_speed_out = DM_4310_pitch_head->motor_controller.speed_PID->output;
+	
 }

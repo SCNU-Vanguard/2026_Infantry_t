@@ -45,7 +45,8 @@ typedef struct
 
 
 void Chassis_Init(void);
-float Chassis_Get_Omega (DJI_motor_instance_t *M3508[]);
+float Chassis_Get_Omega_Ref(DJI_motor_instance_t *M3508[]);
+float Chassis_Get_Omega_Follow(void);
 void Mecanum_Solve(Chassis_CmdTypedef *cmd, float *ret);
 void Chassis_Ctrl_Remote(void);
 
