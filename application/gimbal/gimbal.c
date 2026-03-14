@@ -83,7 +83,7 @@ float pitch_head_speed_out = 0;
 //};
 
 PID_t angle_pid_yaw = {
-	.kp = -5.0f,//-7        //注意pid输出方向
+	.kp = -3.0f,//-5        //注意pid输出方向
 	.ki = 0.0f,
 	.kd = 0.0f,
 	.integral_limit = 0.0f,
@@ -545,12 +545,12 @@ void Gimbal_Control_Remote(void)
 				if(vs_aim_packet_from_nuc.yaw != 0)//视觉未识别到会传回0，不为0才处理数据
 				{
 					float diff = temp_v_yaw - vs_aim_packet_from_nuc.yaw;//用于过零点时判断转向
-					float diff_correct = 0.0f;//用于过零点时判断是否超过斜坡限制
+					float diff_correct = diff;//用于过零点时判断是否超过斜坡限制
 					
-					if ( diff > PI )//保持在-pi ~ PI范围内
-						diff_correct = diff - 2 * PI;
-					else if( diff < -PI )
-						diff_correct = diff + 2 * PI;
+					if ( diff_correct > PI )//保持在-pi ~ PI范围内
+						diff_correct -= 2 * PI;
+					else if( diff_correct < -PI )
+						diff_correct += 2 * PI;
 					
 					if(fabsf(diff_correct) <= YAW_AUTO_AIMING_MAX_ADD)//小于斜坡限制直接取等
 					{

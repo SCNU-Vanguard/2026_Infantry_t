@@ -52,8 +52,9 @@ void VOFA_Display_Pitch_Head(void)
 	vofa_data_view[4] = pitch_head_speed_out;
 	vofa_data_view[5] = INS.Gyro[1] / PI;
 	vofa_data_view[6] = DM_4310_pitch_neck->receive_data.velocity;
+	vofa_data_view[7] = vs_aim_packet_from_nuc.pitch;
 	
-	VOFA_JustFloat(vofa_data_view, 7);
+	VOFA_JustFloat(vofa_data_view, 8);
 }
 
 void VOFA_Display_Yaw(void)
@@ -66,7 +67,10 @@ void VOFA_Display_Yaw(void)
 	vofa_data_view[5] = -INS.Gyro[2] / 4.5;
 	vofa_data_view[6] = vs_aim_packet_from_nuc.yaw;
 	
-	VOFA_JustFloat(vofa_data_view, 7);
+	vofa_data_view[7] = DM_6006_yaw -> motor_controller.angle_PID->error;
+	vofa_data_view[8] = DM_6006_yaw -> motor_controller.speed_PID->error;
+	
+	VOFA_JustFloat(vofa_data_view, 9);
 }
 
 void VOFA_Display_Roll(void)
