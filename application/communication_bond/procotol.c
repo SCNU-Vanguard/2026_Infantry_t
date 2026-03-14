@@ -25,6 +25,7 @@
 
 extern bmi088_data_t imu_data;
 extern INS_behaviour_t INS;
+extern RC_ctrl_t *rc_ctl;
 
 void VOFA_Display_IMU(void)
 {
@@ -66,6 +67,13 @@ void VOFA_Display_Yaw(void)
 	vofa_data_view[6] = vs_aim_packet_from_nuc.yaw;
 	
 	VOFA_JustFloat(vofa_data_view, 7);
+}
+
+void VOFA_Display_Roll(void)
+{
+	vofa_data_view[0] = INS.Pitch;
+	
+	VOFA_JustFloat(vofa_data_view, 1);
 }
 
 void VOFA_Display_Speed(void)
@@ -127,7 +135,7 @@ void VOFA_Display_Shoot(void)
 	VOFA_JustFloat(vofa_data_view, 2);
 }
 
-void VOFA_Displat_AutoAiming(void)
+void VOFA_Display_AutoAiming(void)
 {
 	vofa_data_view[0] = vs_aim_packet_from_nuc.yaw;
 	

@@ -44,7 +44,7 @@ typedef enum
 {
 	AUTOMATIC_AIMING = 1,
 	STAND_NECK = 3,//启动云台控制
-	SIT_NECK = 2,//停止云台控制
+	SIT_NECK = 0,//停止云台控制
 } gimbal_ctrl_e;//云台控制
 
 typedef enum

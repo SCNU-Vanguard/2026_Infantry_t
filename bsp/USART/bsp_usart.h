@@ -46,7 +46,7 @@ typedef struct
 	usart_module_callback module_callback; // 解析收到的数据的回调函数
 	uint16_t beat;
 	uint8_t lost_flag;
-} USART_t;
+} USART_instance_t;
 
 /* usart 初始化配置结构体 */
 typedef struct
@@ -56,15 +56,15 @@ typedef struct
 	usart_module_callback module_callback; // 解析收到的数据的回调函数
 } usart_init_config_t;
 
-USART_t *USART_Register(usart_init_config_t *init_config);
+USART_instance_t *USART_Register(usart_init_config_t *init_config);
 
-void USART_Service_Init(USART_t *_instance);
+void USART_Service_Init(USART_instance_t *_instance);
 
-void USART_Send(USART_t *_instance, uint8_t *send_buf, uint16_t send_size, usart_transfer_e mode);
+void USART_Send(USART_instance_t *_instance, uint8_t *send_buf, uint16_t send_size, usart_transfer_e mode);
 
-uint8_t USART_Error_Lost(USART_t *_instance);
+uint8_t USART_Error_Lost(USART_instance_t *_instance);
 
-uint8_t USART_Is_Ready(USART_t *_instance);
+uint8_t USART_Is_Ready(USART_instance_t *_instance);
 
 #ifdef __cplusplus
 }

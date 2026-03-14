@@ -457,7 +457,7 @@ void Gimbal_Control_Remote(void)
 				
 				if(fabs(DM_4310_pitch_head->receive_data.position - PITCH_HEAD_CLIMBING_ANGLE) < PITCH_HEAD_CLIMBING_JUDGEMENT)
 				{
-					Climbing_Hill();//进入爬坡状态
+//					Climbing_Hill();//进入爬坡状态
 				}
 
 				/*p_neck*/ /*POS_mode 做特殊处理*/
@@ -544,18 +544,45 @@ void Gimbal_Control_Remote(void)
 				//yaw
 				if(vs_aim_packet_from_nuc.yaw != 0)//视觉未识别到会传回0，不为0才处理数据
 				{
-					if(fabsf(temp_v_yaw - vs_aim_packet_from_nuc.yaw) <= YAW_AUTO_AIMING_MAX_ADD)
+					float diff = temp_v_yaw - vs_aim_packet_from_nuc.yaw;//用于过零点时判断转向
+					float diff_correct = 0.0f;//用于过零点时判断是否超过斜坡限制
+					
+					if ( diff > PI )//保持在-pi ~ PI范围内
+						diff_correct = diff - 2 * PI;
+					else if( diff < -PI )
+						diff_correct = diff + 2 * PI;
+					
+					if(fabsf(diff_correct) <= YAW_AUTO_AIMING_MAX_ADD)//小于斜坡限制直接取等
 					{
 						temp_v_yaw = vs_aim_packet_from_nuc.yaw;
 					}
-					else if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
+					else if(diff <= PI && diff >= -PI)//大于斜坡限制但不过零点
 					{
-						temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
+						if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
+						{
+							temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
+						}
+						else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
+						{
+							temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
+						}
 					}
-					else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
+					else if(diff > PI || diff < -PI)//大于斜坡限制且过零点
 					{
-						temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
+						if(temp_v_yaw < vs_aim_packet_from_nuc.yaw)
+						{
+							temp_v_yaw -= YAW_AUTO_AIMING_MAX_ADD;
+						}
+						else if(temp_v_yaw > vs_aim_packet_from_nuc.yaw)
+						{
+							temp_v_yaw += YAW_AUTO_AIMING_MAX_ADD;
+						}
 					}
+					
+					if ( temp_v_yaw > PI )//保持在-pi ~ PI范围内
+						temp_v_yaw -= 2 * PI;
+					else if( temp_v_yaw < -PI )
+						temp_v_yaw += 2 * PI;
 
 //					temp_v_yaw = -vs_aim_packet_from_nuc.yaw;
 				}

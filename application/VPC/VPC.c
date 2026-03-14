@@ -8,6 +8,7 @@
 #include "Serial.h"
 #include "INS.h"
 #include "gimbal.h"
+#include "shoot.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +63,7 @@ void VPC_UpdatePackets(void)
 //  vs_aim_packet_to_nuc.pitch_vel = gimbal_motor_pitch->measure.speed;
   vs_aim_packet_to_nuc.pitch = 0;
   vs_aim_packet_to_nuc.pitch_vel = 0;
-  vs_aim_packet_to_nuc.bullet_speed = 22.75; // 未定
+  vs_aim_packet_to_nuc.bullet_speed = BULLET_SPEED; // 未定
   vs_aim_packet_to_nuc.bullet_count = 0;  // 未定
 
   /*深圳大学版本*/

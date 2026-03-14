@@ -69,8 +69,8 @@ typedef union
 	{
 		uint16_t w    : 1;
 		uint16_t s    : 1;
-		uint16_t d    : 1;
 		uint16_t a    : 1;
+		uint16_t d    : 1;
 		uint16_t shift: 1;
 		uint16_t ctrl : 1;
 		uint16_t q    : 1;
@@ -122,6 +122,6 @@ RC_ctrl_t *Remote_Control_Init(UART_HandleTypeDef *rc_usart_handle);
 
 uint8_t Remote_Control_Is_Online(void);
 
-extern Key_t keyboard;
+extern Key_t get_value;
 
 #endif /* __REMOTE_CONTROL_H__ */

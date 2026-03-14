@@ -13,6 +13,7 @@
 #include "shoot.h"
 #include "robot_frame_config.h"
 #include "robot_frame_init.h"
+#include "ramp.h"
 
 
 

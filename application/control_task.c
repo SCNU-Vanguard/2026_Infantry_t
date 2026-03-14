@@ -5,12 +5,15 @@
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
 #define YAW_DEADBAND 3 //yaw轴死区值
 #define MAX_ABS_INCREMENT 0.003 //限制电机转速增量的值
+#define CONTROL_MODE 1	//1为遥控器，0为键鼠
+
 osThreadId_t control_task_handle;
 uint32_t control_task_diff;//任务周期
 float vx_current;
 float vx_target;
 float vy_current;
 float vy_target;
+float temp_x;
 
 float A = 3.0f;
 float w = 0.5f;
@@ -108,6 +111,7 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 //	chs -> vx = Get_target_with_limitation(vx_current, vx_target);
 //	chs -> vy = Get_target_with_limitation(vy_current, vy_target);
 	
+	
 	chs -> vx = (float) rc_ctl -> rc . rocker_l1 * REMOTE_X_SEN ;
 	chs -> vy = (float) rc_ctl -> rc . rocker_l_ * REMOTE_Y_SEN ;
 
@@ -178,9 +182,104 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	else if( rc_ctl -> rc . switch_right == 2 || rc_ctl -> rc . switch_right == 0)
 	{
 		gim -> ctrl_mode = SIT_NECK;			//缩头
-//		gim -> v_pitch_neck = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN;//对应加减
 	}
 
+}
+
+void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
+{
+	if(rc_ctl -> rc . switch_left == 3)//先加个遥控器的档位做保护
+	{
+		chs -> vx = Ramp_data1((uint8_t)rc_ctl -> key[KEY_PRESS].w) - Ramp_data2((uint8_t)rc_ctl -> key[KEY_PRESS].s);
+		chs -> vy = Ramp_data3((uint8_t)rc_ctl -> key[KEY_PRESS].d) - Ramp_data4((uint8_t)rc_ctl -> key[KEY_PRESS].a);
+		chs -> omega_z = Ramp_data5((uint8_t)rc_ctl -> key[KEY_PRESS].e) - Ramp_data6((uint8_t)rc_ctl -> key[KEY_PRESS].q);	//小陀螺转速
+		
+		if(fabsf(temp_x - rc_ctl -> mouse.x) <= KEYBOARD_YAW_MAX_ADD)
+		{
+			temp_x = rc_ctl -> mouse.x;
+		}
+		else if(temp_x < rc_ctl -> mouse.x)
+		{
+			temp_x += KEYBOARD_YAW_MAX_ADD;
+		}
+		else if(temp_x > rc_ctl -> mouse.x)
+		{
+			temp_x -= KEYBOARD_YAW_MAX_ADD;
+		}
+		gim -> v_yaw = (float)Gimbal_limit(temp_x) * KEYBOARD_YAW_SEN;
+//		gim -> v_yaw = (float)Gimbal_limit((float)rc_ctl -> mouse.x) * KEYBOARD_YAW_SEN;
+		gim -> v_pitch_head = (float)Gimbal_limit((float)rc_ctl -> mouse.y) * KEYBOARD_PITCH_SEN;
+		
+		if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].b)//全车使能
+		{
+			chs -> mode = FOLLOW;
+			gim -> status = GIMBAL_ENABLE;
+			gim -> ctrl_mode = SIT_NECK;//缩头
+			shoot_mode = SHOOT_MODE_STOP;
+		}
+		else if(rc_ctl -> key[KEY_PRESS].b)//全车失能
+		{
+			chs -> mode = STOP_C;
+			gim -> status = GIMBAL_DISABLE;
+			shoot_mode = SHOOT_MODE_STOP;
+		}
+		
+		if(rc_ctl -> key[KEY_PRESS].c)//伸头
+		{
+			gim -> ctrl_mode = STAND_NECK;
+		}
+		else if(rc_ctl -> key[KEY_PRESS].v)//缩头
+		{
+			gim -> ctrl_mode = SIT_NECK;
+		}
+		
+		if(gim -> ctrl_mode == STAND_NECK)//伸头时判断是否开自瞄
+		{
+			if(rc_ctl -> mouse.press_r)
+			{
+				gim -> ctrl_mode = AUTOMATIC_AIMING;//自瞄
+			}
+		}
+		else if(gim -> ctrl_mode == AUTOMATIC_AIMING)//自瞄时判断是否退出自瞄
+		{
+			if(!(rc_ctl -> mouse.press_r))
+			{
+				gim -> ctrl_mode = STAND_NECK;//自瞄
+			}
+		}
+		
+		if(rc_ctl -> key[KEY_PRESS].f)//开摩擦轮
+		{
+			shoot_mode = SHOOT_MODE_FIRE;
+		}
+		else if(rc_ctl -> key[KEY_PRESS].r)//关摩擦轮
+		{
+			shoot_mode = SHOOT_MODE_STOP;
+		}
+		
+		if(gim -> ctrl_mode == STAND_NECK || gim -> ctrl_mode == AUTOMATIC_AIMING)//抬头和自瞄时检测是否开枪
+		{
+			if(rc_ctl -> mouse.press_l)
+			{
+				target_shoot_frequence = 80;
+			}
+			else
+			{
+				target_shoot_frequence = 0;
+			}
+		}
+	}
+	else
+	{
+		chs -> mode = STOP_C;
+		gim -> status = GIMBAL_DISABLE;
+		shoot_mode = SHOOT_MODE_STOP;
+	}
+//	chs -> vx = ( Ramp_data1(RC_Ctl . keyboard . W) * (-SPEED_LMT) ) +  ( Ramp_data2(RC_Ctl . keyboard . S) * ( SPEED_LMT) ) ;
+//	chs -> vy = ( Ramp_data3(RC_Ctl . keyboard . A) * ( SPEED_LMT) ) +  ( Ramp_data4(RC_Ctl . keyboard . D) *  (-SPEED_LMT) ) ;
+//	gim -> v_yaw   = -(float) RC_Ctl . keyboard . x * KEYBOARD_YAW_SEN; //x -- 鼠标左右
+//	gim -> v_pitch =  (float) RC_Ctl . keyboard . y * KEYBOARD_PITCH_SEN;//y -- 上下
+	
 }
 
 static void Control_Task(void *argument)
@@ -190,8 +289,11 @@ static void Control_Task(void *argument)
     //Send_Packet_Init(&aim_packet_to_nuc);//与上位机通讯
     for (;;)
     {
-        
-        Remote_Ctrl (&gimbal_cmd, &chassis_cmd);
+#if CONTROL_MODE
+        Remote_Ctrl (&gimbal_cmd, &chassis_cmd);//遥控器操纵
+#else
+		KeyboardCtrl(&gimbal_cmd, &chassis_cmd);//键鼠操纵
+#endif
 		Chassis_Cmd_Trans(&chassis_cmd, ANGLE_REFERENCE, DM_6006_yaw -> receive_data.position);//底盘坐标系转云台坐标系
 
         control_task_diff = osKernelGetTickCount() - time;

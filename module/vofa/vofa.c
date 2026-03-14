@@ -20,7 +20,7 @@
 uint8_t send_buf[MAX_BUFFER_SIZE];
 uint16_t cnt = 0;
 
-USART_t *vofa_usart_instance;
+USART_instance_t *vofa_usart_instance;
 
 float vofa_data_view[20] = {0};
 

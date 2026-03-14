@@ -17,8 +17,6 @@
 #include "gimbal.h"
 #include "shoot_motor.h"
 
-#define SHOOT_V 8000  //摩擦轮转速 rpm
-
 DJI_motor_instance_t *chassis_shoot_motor;
 shoot_motor_instance_t *friction_motor[3];
 

@@ -21,6 +21,9 @@
 #define SHOOT_MODE_STOP 0
 #define SHOOT_MODE_FIRE 1
 
+#define SHOOT_V 6666  //摩擦轮转速 rpm
+#define BULLET_SPEED 16.4//摩擦轮8000对应22.75
+
 typedef struct 
 {
     /* data */

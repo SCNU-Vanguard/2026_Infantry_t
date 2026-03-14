@@ -206,7 +206,7 @@ void Chassis_Ctrl_Remote(void)
 	//获取底盘自旋速度给小陀螺
 	chassis_cmd.omega_ref = - Chassis_Get_Omega_Ref(chassis_m3508) * YAW_FEEDFORWAED_COEFFICIENT;
 	//获取底盘跟随旋转角
-	//chassis_cmd.omega_follow = Chassis_Get_Omega_Follow();
+//	chassis_cmd.omega_follow = Chassis_Get_Omega_Follow();
 	//设目标值
 	for(int i = 0; i < 4; i++)
 	{

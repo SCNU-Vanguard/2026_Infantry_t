@@ -536,9 +536,6 @@ void DM_Motor_Control(void)
 				}
 				
 				// 更新pid_ref进入下一个环
-	//            pid_ref = PID_Increment(motor_controller->speed_PID,
-	//                                    receive_data->velocity,
-	//                                    pid_ref);
 				pid_ref = PID_Increment(motor_controller->speed_PID,
 										pid_fab,
 										pid_ref);

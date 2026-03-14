@@ -39,17 +39,22 @@
 #define WHEEL_RADIUS 0.077f	//驱动轮半径（diameter）
 
 #define ANGLE_REFERENCE -1.00414968 //底盘坐标系转云台坐标系角度参考值(正前方时电机编码器角度)
-#define ANGLE_STAND -0.9321473	//底盘跟随的电机编码器角度，此角度才能抬头
+#define ANGLE_STAND 0.570505798//-0.9321473	//底盘跟随的电机编码器角度，此角度才能抬头
 
 #define OMEGA_FOLLOW_MAX_ADD 0.0005f	//底盘跟随斜坡
     
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.005   //660 ~ -660 
 #define REMOTE_Y_SEN 0.005
-#define REMOTE_OMEGA_Z_SEN 0.005f  //6.6
+#define REMOTE_OMEGA_Z_SEN 0.01f  //6.6
 
 #define REMOTE_YAW_SEN 0.000015f       
 #define REMOTE_PITCH_SEN 0.000002f
+
+/*键鼠参数*/
+#define KEYBOARD_YAW_SEN 0.000038f
+#define KEYBOARD_PITCH_SEN 0.00003f
+#define KEYBOARD_YAW_MAX_ADD 2.5f	//键鼠YAW斜坡
 
 /*云台相关参数*/    //注意大小问题
 #define PITCH_NECK_MIN_ANGLE  -0.03f //rad , 对应缩头时发送的角度
@@ -60,9 +65,9 @@
 #define PITCH_NECK_TRANSFORM_SPEED 0.0018 //伸缩变换时使用的过渡增量
 #define PITCH_NECK_TRANSFORM_JUDGEMENT 0.03 //伸缩变换时使用的判断值
 
-#define PITCH_HEAD_MIN_ANGLE  0.18f //rad , 对应伸头时的最低角度
+#define PITCH_HEAD_MIN_ANGLE  0.15f //0.18//rad , 对应伸头时的最低角度
 #define PITCH_HEAD_MID_ANGLE  -0.02f //rad , 对应中间的角度
-#define PITCH_HEAD_MAX_ANGLE  -0.38f  //rad , 对应伸出头时的最高角度
+#define PITCH_HEAD_MAX_ANGLE  -0.72f  //rad , 对应伸出头时的最高角度
 #define PITCH_HEAD_MAX_SPEED  0.001f // rad/s
 #define PITCH_HEAD_TRANSFORM_SPEED 0.0016 //伸缩变换时使用的过渡增量
 #define PITCH_HEAD_TRANSFORM_JUDGEMENT 0.05 //伸缩变换时使用的判断值
@@ -73,8 +78,8 @@
 #define YAW_MAX_SPEED 2.0f //rad/s
 #define YAW_COEFFICIENT 0.6 //遥控器增量乘的系数
 
-#define YAW_FEEDFORWAED_COEFFICIENT 0.22	//小陀螺yaw轴前馈用的系数
+#define YAW_FEEDFORWAED_COEFFICIENT 0	//小陀螺yaw轴前馈用的系数
 
-#define YAW_AUTO_AIMING_MAX_ADD 0.003f//0.001	自瞄斜坡
+#define YAW_AUTO_AIMING_MAX_ADD 0.001//0.003f	自瞄斜坡
 
 #endif /* __ROBOT_FRAME_CONFIG_H__ */
