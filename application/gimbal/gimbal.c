@@ -23,7 +23,8 @@ float temp_v_pitch_neck;
 float temp_v_pitch_head;
 
 //云台Yaw轴距离中间角度的cos值，大于0.85时，Yaw轴处于较为中间的位置
-float yaw_to_mid;
+float yaw_to_mid;//差值的cos值
+float yaw_to_mid_error;//差值
 
 //初始上电位置YAW轴编码器值
 float Yaw_6006_Initial_Value;
@@ -457,7 +458,7 @@ void Gimbal_Control_Remote(void)
 				
 				if(fabs(DM_4310_pitch_head->receive_data.position - PITCH_HEAD_CLIMBING_ANGLE) < PITCH_HEAD_CLIMBING_JUDGEMENT)
 				{
-//					Climbing_Hill();//进入爬坡状态
+					Climbing_Hill();//进入爬坡状态
 				}
 
 				/*p_neck*/ /*POS_mode 做特殊处理*/
@@ -491,7 +492,7 @@ void Gimbal_Control_Remote(void)
 			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position > PITCH_NECK_ACTUAL_MAX_ANGLE + PITCH_NECK_TRANSFORM_JUDGEMENT)//Yaw轴居中但还没抬头，yaw轴不动，等抬完头才动
 			{
 				//head
-				temp_v_pitch_head += -0.0005;
+				temp_v_pitch_head -= PITCH_HEAD_STAND_ADD;
 				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
 				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 					
@@ -537,8 +538,29 @@ void Gimbal_Control_Remote(void)
 				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
 				
 				//head
-				temp_v_pitch_head = vs_aim_packet_from_nuc.pitch;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
+//				if(vs_aim_packet_from_nuc.pitch != 0)//视觉未识别到会传回0，不为0才处理数据
+//				{
+//					temp_v_pitch_head = vs_aim_packet_from_nuc.pitch;
+//					USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
+//				}
+				
+				if(vs_aim_packet_from_nuc.pitch != 0)//视觉未识别到会传回0，不为0才处理数据
+				{
+					if(fabsf(temp_v_pitch_head - vs_aim_packet_from_nuc.pitch) <= PITCH_AUTO_AIMING_MAX_ADD)
+					{
+						temp_v_pitch_head = vs_aim_packet_from_nuc.pitch;
+					}
+					else if(temp_v_pitch_head < vs_aim_packet_from_nuc.pitch)
+					{
+						temp_v_pitch_head += PITCH_AUTO_AIMING_MAX_ADD;
+					}
+					else if(temp_v_pitch_head > vs_aim_packet_from_nuc.pitch)
+					{
+						temp_v_pitch_head -= PITCH_AUTO_AIMING_MAX_ADD;
+					}
+					USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
+				}
+				
 				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 				
 				//yaw

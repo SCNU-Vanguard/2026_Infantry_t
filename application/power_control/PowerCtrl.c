@@ -10,7 +10,7 @@ float P_total = 0;   // 测量总功率
 float P_total_temp = 0; // 临时总功率
 
 float P_cmd[4] = {0}; // 以最大功率上线分配所得的功率
-float chassis_max_power = 100; // 底盘最大功率 , 5~8W 的误差 
+float chassis_max_power = 60; // 底盘最大功率 , 5~8W 的误差 
 
 float I_temp[4] = {0};
 
@@ -150,6 +150,11 @@ void chassis_power_control()
 			}
 		}
     }
+	
+	I_test[0] = (float)abs(chassis_m3508[0]->target.current);
+	I_test[1] = (float)abs(chassis_m3508[1]->target.current);
+	I_test[2] = (float)abs(chassis_m3508[2]->target.current);
+	I_test[3] = (float)abs(chassis_m3508[3]->target.current);
 	
 ////////////////////////////////////////////////////////////////////////////////////////////调试使用，后面可以注释这一段
 	for(uint8_t i = 0;i < 4;i++)

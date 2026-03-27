@@ -5,7 +5,8 @@
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
 #define YAW_DEADBAND 3 //yaw轴死区值
 #define MAX_ABS_INCREMENT 0.003 //限制电机转速增量的值
-#define CONTROL_MODE 1	//1为遥控器，0为键鼠
+#define CONTROL_MODE 0	//1为遥控器，0为键鼠
+#define MOUSE_BULLET_FRE 120
 
 osThreadId_t control_task_handle;
 uint32_t control_task_diff;//任务周期
@@ -14,11 +15,14 @@ float vx_target;
 float vy_current;
 float vy_target;
 float temp_x;
+float temp_y;
 
 float A = 3.0f;
 float w = 0.5f;
 uint32_t x = 0;
 uint32_t t = 0;
+
+uint8_t Close_Spin_Flag;
 
 // static publisher_t *chassis_publisher;
 // static subscriber_t *chassis_subscriber;
@@ -60,6 +64,7 @@ void Chassis_Cmd_Trans (Chassis_CmdTypedef *cmd, float chs_zeropoint, float gim_
 //		bias_tmp = 0;
 //	}
 	
+	yaw_to_mid_error = bias_tmp;
 	yaw_to_mid = cosf (bias_tmp);
 	
 	///////////////////////////////////////////////////////////////////////////////////////////不要底盘坐标系转云台坐标系就注释这一段
@@ -190,10 +195,14 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 {
 	if(rc_ctl -> rc . switch_left == 3)//先加个遥控器的档位做保护
 	{
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//底盘
 		chs -> vx = Ramp_data1((uint8_t)rc_ctl -> key[KEY_PRESS].w) - Ramp_data2((uint8_t)rc_ctl -> key[KEY_PRESS].s);
 		chs -> vy = Ramp_data3((uint8_t)rc_ctl -> key[KEY_PRESS].d) - Ramp_data4((uint8_t)rc_ctl -> key[KEY_PRESS].a);
-		chs -> omega_z = Ramp_data5((uint8_t)rc_ctl -> key[KEY_PRESS].e) - Ramp_data6((uint8_t)rc_ctl -> key[KEY_PRESS].q);	//小陀螺转速
+//		chs -> omega_z = Ramp_data5((uint8_t)rc_ctl -> key[KEY_PRESS].e) - Ramp_data6((uint8_t)rc_ctl -> key[KEY_PRESS].q);	//小陀螺转速
 		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//云台
 		if(fabsf(temp_x - rc_ctl -> mouse.x) <= KEYBOARD_YAW_MAX_ADD)
 		{
 			temp_x = rc_ctl -> mouse.x;
@@ -206,10 +215,26 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 		{
 			temp_x -= KEYBOARD_YAW_MAX_ADD;
 		}
-		gim -> v_yaw = (float)Gimbal_limit(temp_x) * KEYBOARD_YAW_SEN;
-//		gim -> v_yaw = (float)Gimbal_limit((float)rc_ctl -> mouse.x) * KEYBOARD_YAW_SEN;
-		gim -> v_pitch_head = (float)Gimbal_limit((float)rc_ctl -> mouse.y) * KEYBOARD_PITCH_SEN;
+		gim -> v_yaw = Gimbal_limit(temp_x) * KEYBOARD_YAW_SEN;
+//		gim -> v_yaw = Gimbal_limit((float)rc_ctl -> mouse.x) * KEYBOARD_YAW_SEN;
 		
+		if(fabsf(temp_y - rc_ctl -> mouse.y) <= KEYBOARD_YAW_MAX_ADD)
+		{
+			temp_y = rc_ctl -> mouse.y;
+		}
+		else if(temp_y < rc_ctl -> mouse.y)
+		{
+			temp_y += KEYBOARD_YAW_MAX_ADD;
+		}
+		else if(temp_y > rc_ctl -> mouse.y)
+		{
+			temp_y -= KEYBOARD_YAW_MAX_ADD;
+		}
+		gim -> v_pitch_head = Gimbal_limit(temp_y) * KEYBOARD_PITCH_SEN;
+//		gim -> v_pitch_head = Gimbal_limit((float)rc_ctl -> mouse.y) * KEYBOARD_PITCH_SEN;
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//使能失能及伸缩头
 		if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].b)//全车使能
 		{
 			chs -> mode = FOLLOW;
@@ -233,21 +258,34 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 			gim -> ctrl_mode = SIT_NECK;
 		}
 		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//开关自瞄
 		if(gim -> ctrl_mode == STAND_NECK)//伸头时判断是否开自瞄
 		{
-			if(rc_ctl -> mouse.press_r)
+			if(rc_ctl -> mouse.press_r == 1 && vs_aim_packet_from_nuc.pitch != 0)
 			{
 				gim -> ctrl_mode = AUTOMATIC_AIMING;//自瞄
 			}
 		}
 		else if(gim -> ctrl_mode == AUTOMATIC_AIMING)//自瞄时判断是否退出自瞄
 		{
-			if(!(rc_ctl -> mouse.press_r))
+			if(rc_ctl -> key[KEY_PRESS].shift)//按住shift并开自瞄为不使用火控
 			{
-				gim -> ctrl_mode = STAND_NECK;//自瞄
+				Fire_Control = 0;
+			}
+			else
+			{
+				Fire_Control = 1;
+			}
+			
+			if(rc_ctl -> mouse.press_r == 0 || vs_aim_packet_from_nuc.pitch == 0)//上位机不传数据就人为接管
+			{
+				gim -> ctrl_mode = STAND_NECK;//退出自瞄
 			}
 		}
 		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//开关摩擦轮
 		if(rc_ctl -> key[KEY_PRESS].f)//开摩擦轮
 		{
 			shoot_mode = SHOOT_MODE_FIRE;
@@ -257,16 +295,69 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 			shoot_mode = SHOOT_MODE_STOP;
 		}
 		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//开枪
 		if(gim -> ctrl_mode == STAND_NECK || gim -> ctrl_mode == AUTOMATIC_AIMING)//抬头和自瞄时检测是否开枪
 		{
-			if(rc_ctl -> mouse.press_l)
+			if(rc_ctl -> mouse.press_l == 1)
 			{
-				target_shoot_frequence = 80;
+				target_shoot_frequence = MOUSE_BULLET_FRE;
 			}
 			else
 			{
 				target_shoot_frequence = 0;
 			}
+//			if(chassis_shoot_motor->target.current == 9000)//拨弹盘2006堵转
+//			{
+//				DJI_Motor_Stop(chassis_shoot_motor);
+//			}
+		}
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//开关小陀螺
+		if(rc_ctl -> key[KEY_PRESS].e)//开启小陀螺
+		{
+			if(gim -> ctrl_mode == STAND_NECK && chs -> mode != STOP_C)//未抬头不能小陀螺
+			{
+				chs -> mode = SPIN;
+			}
+		}
+		else if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].q)//挂起关闭小陀螺标志位
+		{
+			if(chs -> mode == SPIN)
+			{
+				chassis_cmd.omega_z = 0.0f;
+				chs -> mode = FOLLOW;
+			}
+		}
+		else if(rc_ctl -> key[KEY_PRESS].q)//挂起关闭小陀螺标志位
+		{
+			if(chs -> mode == SPIN)
+			{
+				Close_Spin_Flag = 1;
+			}
+		}
+		
+		if(Close_Spin_Flag)//直道小陀螺转到较为中间再退出小陀螺防止退出时距离中心太远导致底盘跟随超功率
+		{
+			if(yaw_to_mid > 0.90f)
+			{
+				Close_Spin_Flag = 0;
+				chassis_cmd.omega_z = 0.0f;
+				chs -> mode = FOLLOW;
+			}
+		}
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//开启底盘跟随（防止在小陀螺时死亡导致头卡在奇怪的位置，死亡后会关闭底盘跟随，复活后等头抬起再手动开启底盘跟随）
+		if(rc_ctl -> key[KEY_PRESS].g)
+		{
+			Chassis_Follow_Flag = 1;
+		}
+		if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].g)
+		{
+			chassis_cmd.omega_follow = 0;
+			Chassis_Follow_Flag = 0;
 		}
 	}
 	else
@@ -275,11 +366,22 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 		gim -> status = GIMBAL_DISABLE;
 		shoot_mode = SHOOT_MODE_STOP;
 	}
-//	chs -> vx = ( Ramp_data1(RC_Ctl . keyboard . W) * (-SPEED_LMT) ) +  ( Ramp_data2(RC_Ctl . keyboard . S) * ( SPEED_LMT) ) ;
-//	chs -> vy = ( Ramp_data3(RC_Ctl . keyboard . A) * ( SPEED_LMT) ) +  ( Ramp_data4(RC_Ctl . keyboard . D) *  (-SPEED_LMT) ) ;
-//	gim -> v_yaw   = -(float) RC_Ctl . keyboard . x * KEYBOARD_YAW_SEN; //x -- 鼠标左右
-//	gim -> v_pitch =  (float) RC_Ctl . keyboard . y * KEYBOARD_PITCH_SEN;//y -- 上下
+
+	if(rc_ctl -> key[KEY_PRESS].x == 1)
+	{
+		ui_reinit();
+	}
 	
+	if(refree_data->Game_Robot_state.current_HP == 0)
+	{
+		chassis_cmd.omega_follow = 0;
+		Chassis_Follow_Flag = 0;
+		
+		chs -> mode = STOP_C;
+		gim -> status = GIMBAL_DISABLE;
+		shoot_mode = SHOOT_MODE_STOP;
+	}
+
 }
 
 static void Control_Task(void *argument)

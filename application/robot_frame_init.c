@@ -30,7 +30,7 @@
 #include "daemon.h"
 #include "INS.h"
 #include "procotol.h"
-#include "superpower.h"
+#include "SuperCap.h"
 
 #include "bmi088.h"
 #include "ws2812.h"
@@ -42,9 +42,13 @@
 
 #include "BMI088driver.h"
 #include "remote_control.h"
+#include "referee.h"
+
+#include "ui.h"
 
 float init_time;
 RC_ctrl_t *rc_ctl;
+Referee_InfoTypedef *refree_data;
 
 static void Frame_MCU_Init(void)
 {
@@ -69,6 +73,10 @@ static void Frame_Device_Init(void)
     Shoot_Init();
 	
 	Super_Power_Init();
+	
+	refree_data=Referee_Init(&huart10);
+
+    ui_init();
 }
 
 /*
@@ -90,6 +98,8 @@ static void Frame_Task_Init(void)
     Shoot_Task_Init();
 
     Procotol_Task_Init();
+
+    UI_Task_Init();
 
     //VPC_Task_Init();
 }

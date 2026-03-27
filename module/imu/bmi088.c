@@ -17,7 +17,7 @@
 #define BMI088_AUTO_CS 1
 #define BMI088_EXTI 0
 
-#define BMI088_Cali 0
+#define BMI088_Cali 0//
 
 bmi088_init_config_t bmi088_init_h7 = {
 	.heat_pid_config = {

@@ -23,7 +23,8 @@ shoot_motor_instance_t *friction_motor[3];
 uint16_t target_shoot_frequence = 0;
 uint8_t shoot_mode = 0;
 uint8_t shoot_permission = 0;
-uint8_t test = 0;
+uint8_t friction_state = 0;
+uint8_t Fire_Control = 1;
 
 PID_t chassis_2006_speed_pid = {
     .kp = 30.0f,
@@ -184,40 +185,45 @@ void Shoot_Control_Remote(void)
 	{
 		case SHOOT_MODE_STOP:
 		{
-			test = 0;
+			friction_state = 0;
 			Shoot_Stop();
+			chassis_shoot_motor->motor_controller.speed_PID->output = 0;
 			break;
 		}
 		case SHOOT_MODE_FIRE://需要写保护，龟头必须抬起来才能转摩擦轮，摩擦轮转起来才能转拨弹盘
 		{
 			if(shoot_permission)
 			{
-				test = 1;
-				
 				Shoot_Enable();
 				
 				Shoot_Set_All_Friction(SHOOT_V);
 				
 				if(friction_motor[0] -> receive_flag == 0xA5 && friction_motor[1] -> receive_flag == 0xA5 && friction_motor[2] -> receive_flag == 0xA5)//摩擦轮开转后再给拨弹盘设置转速
 				{
-					if(vs_aim_packet_from_nuc.mode == 1)//火控，上位机发1时拨弹盘不允许转
+					friction_state = 1;//ui使用
+					
+					if(Fire_Control && gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)//键鼠控制是否使用火控
 					{
-						target_shoot_frequence = 0;
+						if(vs_aim_packet_from_nuc.mode == 1)//火控，上位机发1时拨弹盘不允许转
+						{
+							target_shoot_frequence = 0;
+						}
 					}
+					
 					DJI_Motor_Set_Ref(chassis_shoot_motor, target_shoot_frequence);
 				}
 			}
 			else
 			{
-				test = 0;
-				
 				Shoot_Stop();
+				chassis_shoot_motor->motor_controller.speed_PID->output = 0;
 			}
 			break;
 		}
 		default:
 		{
 			Shoot_Stop();
+			chassis_shoot_motor->motor_controller.speed_PID->output = 0;
 			break;
 		}
 	}

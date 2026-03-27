@@ -197,8 +197,8 @@ typedef struct
 	uint16_t maximum_HP;
 	uint16_t shooter_barrel_cooling_value;//机器人枪口热量每秒冷却值
 
-	uint16_t shooter_barrel_heat_limit; //枪口热量上限   
-	uint16_t chassis_power_limit;       //底盘功率上限
+	uint16_t shooter_barrel_heat_limit;	//枪口热量上限   
+	uint16_t chassis_power_limit;		//底盘功率上限
 	
 	uint8_t power_management_gimbal_output : 1;
 	uint8_t power_management_chassis_output : 1;
@@ -526,7 +526,7 @@ typedef struct{
 	ext_bullet_remaining_t	bullet_remaining;		// 0x0208	        子弹剩余发射数
 	ext_rfid_status_t		rfid_status;				// 0x0209	        RFID信息
 	ext_dart_client_cmd_t   dart_client;        // 0x020A         飞镖客户端
-  ext_ground_robot_position_t ground_robot_position;   //0x020B      地面机器人位置数据
+	ext_ground_robot_position_t ground_robot_position;   //0x020B      地面机器人位置数据
 	ext_radar_mark_data_t       radar_mark_data ;     //0x020C    雷达标记数据
 	ext_sentry_info_t           sentry_info;              //0x020D    哨兵自主决策信息同步
 	ext_radar_info_t            radar_info;                //0x020E    雷达自主决策信息同步

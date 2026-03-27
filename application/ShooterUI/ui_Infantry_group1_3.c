@@ -41,20 +41,20 @@ void _ui_init_Infantry_group1_3() {
 
     ui_Infantry_group1_left->figure_tpye = 0;
     ui_Infantry_group1_left->layer = 0;
-    ui_Infantry_group1_left->start_x = 398;
-    ui_Infantry_group1_left->start_y = 53;
-    ui_Infantry_group1_left->end_x = 613;
-    ui_Infantry_group1_left->end_y = 387;
-    ui_Infantry_group1_left->color = 1;
+    ui_Infantry_group1_left->start_x = 327;
+    ui_Infantry_group1_left->start_y = 2;
+    ui_Infantry_group1_left->end_x = 689;
+    ui_Infantry_group1_left->end_y = 330;
+    ui_Infantry_group1_left->color = 5;
     ui_Infantry_group1_left->width = 3;
 
     ui_Infantry_group1_right->figure_tpye = 0;
     ui_Infantry_group1_right->layer = 0;
-    ui_Infantry_group1_right->start_x = 1518;
-    ui_Infantry_group1_right->start_y = 51;
-    ui_Infantry_group1_right->end_x = 1303;
-    ui_Infantry_group1_right->end_y = 385;
-    ui_Infantry_group1_right->color = 1;
+    ui_Infantry_group1_right->start_x = 1573;
+    ui_Infantry_group1_right->start_y = 0;
+    ui_Infantry_group1_right->end_x = 1189;
+    ui_Infantry_group1_right->end_y = 339;
+    ui_Infantry_group1_right->color = 5;
     ui_Infantry_group1_right->width = 3;
 
     ui_Infantry_group1_horizen1->figure_tpye = 0;

@@ -7,15 +7,16 @@
 #define FRAME_ID 1
 #define GROUP_ID 1
 #define START_ID 0
-#define OBJ_NUM 5
-#define FRAME_OBJ_NUM 5
+#define OBJ_NUM 6
+#define FRAME_OBJ_NUM 6
 
 CAT(ui_, CAT(FRAME_OBJ_NUM, _frame_t)) ui_Infantry_group2_0;
 ui_interface_line_t *ui_Infantry_group2_Front = (ui_interface_line_t *)&(ui_Infantry_group2_0.data[0]);
 ui_interface_line_t *ui_Infantry_group2_electricity = (ui_interface_line_t *)&(ui_Infantry_group2_0.data[1]);
 ui_interface_rect_t *ui_Infantry_group2_fric_point = (ui_interface_rect_t *)&(ui_Infantry_group2_0.data[2]);
 ui_interface_rect_t *ui_Infantry_group2_auto_point = (ui_interface_rect_t *)&(ui_Infantry_group2_0.data[3]);
-ui_interface_number_t *ui_Infantry_group2_error_num = (ui_interface_number_t *)&(ui_Infantry_group2_0.data[4]);
+ui_interface_rect_t *ui_Infantry_group2_jam_point = (ui_interface_rect_t *)&(ui_Infantry_group2_0.data[4]);
+ui_interface_number_t *ui_Infantry_group2_error_num = (ui_interface_number_t *)&(ui_Infantry_group2_0.data[5]);
 
 void _ui_init_Infantry_group2_0() {
     for (int i = 0; i < OBJ_NUM; i++) {
@@ -63,6 +64,15 @@ void _ui_init_Infantry_group2_0() {
     ui_Infantry_group2_auto_point->width = 12;
     ui_Infantry_group2_auto_point->end_x = 339;
     ui_Infantry_group2_auto_point->end_y = 680;
+	
+	ui_Infantry_group2_jam_point->figure_tpye = 1;
+    ui_Infantry_group2_jam_point->layer = 0;
+    ui_Infantry_group2_jam_point->start_x = 328;
+    ui_Infantry_group2_jam_point->start_y = 608;
+    ui_Infantry_group2_jam_point->color = 8;
+    ui_Infantry_group2_jam_point->width = 12;
+    ui_Infantry_group2_jam_point->end_x = 339;
+    ui_Infantry_group2_jam_point->end_y = 619;
 
     ui_Infantry_group2_error_num->figure_tpye = 6;
     ui_Infantry_group2_error_num->layer = 0;
@@ -72,7 +82,6 @@ void _ui_init_Infantry_group2_0() {
     ui_Infantry_group2_error_num->color = 3;
     ui_Infantry_group2_error_num->number = 0;
     ui_Infantry_group2_error_num->width = 3;
-
 
     CAT(ui_proc_, CAT(FRAME_OBJ_NUM, _frame))(&ui_Infantry_group2_0);
     SEND_MESSAGE((uint8_t *) &ui_Infantry_group2_0, sizeof(ui_Infantry_group2_0));

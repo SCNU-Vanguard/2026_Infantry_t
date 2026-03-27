@@ -21,8 +21,8 @@
 #define SHOOT_MODE_STOP 0
 #define SHOOT_MODE_FIRE 1
 
-#define SHOOT_V 6666  //摩擦轮转速 rpm
-#define BULLET_SPEED 16.4//摩擦轮8000对应22.75
+#define SHOOT_V 8000  //摩擦轮转速 rpm
+#define BULLET_SPEED 22.75//摩擦轮8000对应22.75
 
 typedef struct 
 {
@@ -39,6 +39,9 @@ extern uint8_t shoot_mode_last;
 extern uint8_t shoot_mode;
 extern uint16_t target_shoot_frequence;
 extern uint8_t shoot_permission;
+extern uint8_t friction_state;
+extern uint8_t Fire_Control;
+
 extern DJI_motor_instance_t *chassis_shoot_motor;
 extern shoot_motor_instance_t *friction_motor[3];
 

@@ -46,10 +46,10 @@ void _ui_init_Infantry_group1_4() {
 
     ui_Infantry_group1_auto_range->figure_tpye = 4;
     ui_Infantry_group1_auto_range->layer = 0;
-    ui_Infantry_group1_auto_range->rx = 392;
-    ui_Infantry_group1_auto_range->ry = 306;
-    ui_Infantry_group1_auto_range->start_x = 958;
-    ui_Infantry_group1_auto_range->start_y = 535;
+    ui_Infantry_group1_auto_range->rx = 216;
+    ui_Infantry_group1_auto_range->ry = 179;
+    ui_Infantry_group1_auto_range->start_x = 988;
+    ui_Infantry_group1_auto_range->start_y = 544;
     ui_Infantry_group1_auto_range->color = 6;
     ui_Infantry_group1_auto_range->width = 3;
     ui_Infantry_group1_auto_range->start_angle = 0;

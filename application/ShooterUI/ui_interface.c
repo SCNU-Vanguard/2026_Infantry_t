@@ -6,7 +6,7 @@
 #include "referee.h"
 
 uint8_t seq = 0;
-int ui_self_id = 3;//此处依据机器人id自行更改
+int ui_self_id = 103;//此处依据机器人id自行更改
 //为了使消息能够发送给裁判系统，必须要自定义ui_self_id变量（该变量也可以使用其他代码从裁判系统读取后由程序修改）
 
 //void print_message(const uint8_t *message, const int length) {
@@ -115,6 +115,7 @@ void ui_proc_ ## num##_frame(ui_ ## num##_frame_t *msg) {   \
 DEFINE_FRAME_PROC(1, 0x0101)
 DEFINE_FRAME_PROC(2, 0x0102)
 DEFINE_FRAME_PROC(5, 0x0103)
+DEFINE_FRAME_PROC(6, 0x0103)
 DEFINE_FRAME_PROC(7, 0x0104)
 
 void ui_proc_string_frame(ui_string_frame_t *msg) {

@@ -20,7 +20,7 @@
 #include "gimbal.h"
 #include "shoot.h"
 #include "PowerCtrl.h"
-#include "superpower.h"
+#include "SuperCap.h"
 #include "INS.h"
 
 extern bmi088_data_t imu_data;
@@ -102,8 +102,7 @@ void VOFA_Display_Speed(void)
 	vofa_data_view[2] = fabsf(chassis_m3508[2]->measure.speed);
 	vofa_data_view[3] = fabsf(chassis_m3508[3]->measure.speed);
 	
-	vofa_data_view[4] = chassis_cmd.omega_ref;//omega_z;
-	
+	vofa_data_view[4] = chassis_cmd.omega_z;//omega_z;
 	
 	vofa_data_view[5] = fabsf(target_speed[0]);
 	vofa_data_view[6] = fabsf(target_speed[1]);
@@ -121,7 +120,7 @@ void VOFA_Display_Power(void)
 	vofa_data_view[0] = chassis_max_power;
 	vofa_data_view[1] = P_total;
 	vofa_data_view[2] = P_test;
-	vofa_data_view[3] = chassis_power->ChassisPower;
+	vofa_data_view[3] = SuperCap_Data->ChassisPower;
 //	vofa_data_view[4] = I_test[0];
 //	vofa_data_view[5] = I_test[1];
 //	vofa_data_view[6] = I_test[2];
@@ -142,6 +141,13 @@ void VOFA_Display_Shoot(void)
 void VOFA_Display_AutoAiming(void)
 {
 	vofa_data_view[0] = vs_aim_packet_from_nuc.yaw;
+	
+	VOFA_JustFloat(vofa_data_view, 1);
+}
+
+void VOFA_Display_2006_Current(void)
+{
+	vofa_data_view[0] = (float)chassis_shoot_motor->target.current;
 	
 	VOFA_JustFloat(vofa_data_view, 1);
 }

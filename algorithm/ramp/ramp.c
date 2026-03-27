@@ -76,7 +76,7 @@ float Ramp_data6(uint8_t x)
     return y_6;
 }
 
-int16_t Gimbal_limit(float x)
+float Gimbal_limit(float x)
 {
 	if(x > MAX_YAW)
 		x = MAX_YAW;

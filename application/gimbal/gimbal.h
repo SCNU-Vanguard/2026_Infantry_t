@@ -97,6 +97,7 @@ extern float yaw_speed_out;
 extern float yaw_angle_measure;
 extern float yaw_angle_target;
 extern float yaw_to_mid;
+extern float yaw_to_mid_error;
 extern float pitch_head_speed_target;
 extern float pitch_head_speed_measure;
 extern float pitch_head_angle_target;

@@ -15,9 +15,9 @@ typedef struct
     // float voltage;
     // float current;
     // float power;
-    uint8_t errorcode;
+    uint8_t StatusCode;
     float ChassisPower;
-    float ChassisPowerLimit;
+    uint16_t ChassisPowerLimit;
     uint8_t CapEnergy;
     CAN_instance_t *Chassis_power_can_instance;
 } Chassis_Power_instance_t;
@@ -25,8 +25,12 @@ typedef struct
 void Super_Power_Init(void);
 static void Chassis_Power_Decode(CAN_instance_t *can_instance);
 Chassis_Power_instance_t *Chassis_Power_Init(void);
-void Chassis_Power_send_cmd(uint16_t power_limit, uint16_t RefereeEnergyBuffer);
+void SuperCap_send_cmd(uint16_t power_limit, uint16_t RefereeEnergyBuffer);
+void SuperCap_Enable(uint16_t power_limit, uint16_t RefereeEnergyBuffer);
+void SuperCap_Disable(uint16_t power_limit, uint16_t RefereeEnergyBuffer);
+void SuperCap_SystemRestart(uint16_t power_limit, uint16_t RefereeEnergyBuffer);
+void SuperCap_ClearError(uint16_t power_limit, uint16_t RefereeEnergyBuffer);
 
-extern Chassis_Power_instance_t *chassis_power;
+extern Chassis_Power_instance_t *SuperCap_Data;
 
 #endif /* __SPUERPOWER_H__ */

@@ -6,8 +6,10 @@
 #include "main.h"
 #include "gimbal.h"
 #include "remote_control.h"
+#include "robot_frame_init.h"
 #include "chassis.h"
 #include "referee.h"
+#include "SuperCap.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -21,7 +23,7 @@
 #include "DM_motor.h"
 
 #include "bsp_dwt.h"
-#define  UI_TASK_PERIOD 1 // ms
+#define  UI_TASK_PERIOD 10 // ms
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t ui_high_water;
@@ -69,6 +71,8 @@ void ui_init() // 创建所有元素的函数，调用一次即可，如果只�
 	HAL_Delay(115);
 	_ui_init_Infantry_group1_4();
 	HAL_Delay(115);
+	_ui_init_Infantry_group1_5();
+	HAL_Delay(115);
 	_ui_init_Infantry_group2_0();
 	HAL_Delay(115);
 }
@@ -85,6 +89,8 @@ void ui_reinit() // 重新创建所有元素的函数，由于下位机上电时
 	HAL_Delay(115);
 	_ui_remove_Infantry_group1_4();
 	HAL_Delay(115);
+	_ui_remove_Infantry_group1_5();
+	HAL_Delay(115);
 	_ui_remove_Infantry_group2_0();
 	HAL_Delay(115);
 
@@ -97,6 +103,8 @@ void ui_reinit() // 重新创建所有元素的函数，由于下位机上电时
 	_ui_init_Infantry_group1_3();
 	HAL_Delay(115);
 	_ui_init_Infantry_group1_4();
+	HAL_Delay(115);
+	_ui_init_Infantry_group1_5();
 	HAL_Delay(115);
 	_ui_init_Infantry_group2_0();
 	HAL_Delay(115);
@@ -140,6 +148,16 @@ void update_shooter_ui(float gimbal_delta, uint8_t cap_level, uint8_t auto_statu
 	{
 		ui_Infantry_group2_fric_point->color = 8;
 	}
+	
+	if(chassis_shoot_motor->target.current == 9000)
+	{
+		ui_Infantry_group2_jam_point->color = 0;
+	}
+	else
+	{
+		ui_Infantry_group2_jam_point->color = 8;
+	}
+	
 
 	// 更新错误码
 
@@ -147,8 +165,6 @@ void update_shooter_ui(float gimbal_delta, uint8_t cap_level, uint8_t auto_statu
 
 	// 更新UI组2
 	_ui_update_Infantry_group2_0();
-
-
 }
 
 
@@ -163,27 +179,29 @@ void UI_Task(void *argument)//此处根据自己代码的结构体自行更改id
 	for (;;)
 	{
 
-//		if (gimbal_cmd.friction_state)
-//			fric_flag = 1;
-//		else
-//			fric_flag = 0;
+		if (friction_state)
+			fric_flag = 1;
+		else
+			fric_flag = 0;
 
-//		if (gimbal_cmd.shooter == AUTO_FIRE)
-//			auto_flag = 2;					 // 云台跟随+火控开启标志位
-//		else if (gimbal_cmd.shooter == AUTO) // 云台跟随
-//			auto_flag = 1;
-//		else
-//			auto_flag = 0;
+		if (Fire_Control == 1 && gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING) // 云台跟随+火控开启标志位
+			auto_flag = 2;					 
+		else if (Fire_Control == 0 && gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING) // 云台跟随
+			auto_flag = 1;
+		else								 // 手瞄
+			auto_flag = 0;
 
-//		delta_gim = -chassis.error / 8192 * 2 * PI;
-//		supercap_energy = (uint8_t)(supercap_rx_data.capEnergy * 100 / 255);
+		delta_gim = yaw_to_mid_error;
+		
+		supercap_energy = (uint8_t)(SuperCap_Data->CapEnergy);
 
-//		update_shooter_ui(delta_gim, supercap_energy, auto_flag, fric_flag, supercap_rx_data.errorCode); // 更新UI
+		update_shooter_ui(delta_gim, supercap_energy, auto_flag, fric_flag, SuperCap_Data->StatusCode); // 更新UI
 
-//	    if(refree_info.Game_Robot_state.robot_id > 0 && refree_info.Game_Robot_state.robot_id < 12)
-//			    ui_self_id = 3;
-//		else if(refree_info.Game_Robot_state.robot_id > 100 && refree_info.Game_Robot_state.robot_id < 112)
-//				ui_self_id = 103;
+	    if(refree_data->Game_Robot_state.robot_id > 0 && refree_data->Game_Robot_state.robot_id < 12)
+			    ui_self_id = 3;
+		else if(refree_data->Game_Robot_state.robot_id > 100 && refree_data->Game_Robot_state.robot_id < 112)
+				ui_self_id = 103;
+
 		ui_diff = osKernelGetTickCount() - time;
 		time = osKernelGetTickCount();
 		osDelayUntil(time + UI_TASK_PERIOD);

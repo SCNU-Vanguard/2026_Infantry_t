@@ -20,6 +20,7 @@ uint16_t calc_crc16(uint8_t *pchMessage, uint32_t dwLength);
 void ui_proc_1_frame(ui_1_frame_t *msg);
 void ui_proc_2_frame(ui_2_frame_t *msg);
 void ui_proc_5_frame(ui_5_frame_t *msg);
+void ui_proc_6_frame(ui_6_frame_t *msg);
 void ui_proc_7_frame(ui_7_frame_t *msg);
 void ui_proc_string_frame(ui_string_frame_t *msg);
 void autonomous_sentinel_decision(sentry_cmd_t *msg);

@@ -17,6 +17,11 @@ float omega;
 float temp_omega_follow;
 float omega_follow_cal;
 
+float w_c = 0.005f;
+uint32_t x_c = 0;
+
+uint8_t Chassis_Follow_Flag = 16;
+
 /*TEST*/
 float test_omega;
 
@@ -206,7 +211,10 @@ void Chassis_Ctrl_Remote(void)
 	//获取底盘自旋速度给小陀螺
 	chassis_cmd.omega_ref = - Chassis_Get_Omega_Ref(chassis_m3508) * YAW_FEEDFORWAED_COEFFICIENT;
 	//获取底盘跟随旋转角
-//	chassis_cmd.omega_follow = Chassis_Get_Omega_Follow();
+	if(Chassis_Follow_Flag)
+	{
+		chassis_cmd.omega_follow = Chassis_Get_Omega_Follow();
+	}
 	//设目标值
 	for(int i = 0; i < 4; i++)
 	{
@@ -228,13 +236,21 @@ void Chassis_Ctrl_Remote(void)
 	//模式处理
 	if(chassis_cmd.mode == SPIN)
 	{
-//            Chassis_Enable();
-//            chassis_cmd.omega_z = 0.3f;
+		Chassis_Enable();
+		x_c += 1;
+		if(w_c*x_c > 2*PI)
+		{
+			x_c = 0;
+		}
+		chassis_cmd.omega_z = (float)(0.75f*sinf(w_c*x_c)+2.75f);
+				
+//		chassis_cmd.omega_z = 0.3f;
 	}
 
 	else if(chassis_cmd.mode == FOLLOW)
 	{
 		Chassis_Enable();
+		x_c = 0;
 	}
 	else if(chassis_cmd.mode == STOP_C)
 	{

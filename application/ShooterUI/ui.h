@@ -11,6 +11,7 @@ extern "C" {
 #include "ui_Infantry_group1_2.h"
 #include "ui_Infantry_group1_3.h"
 #include "ui_Infantry_group1_4.h"
+#include "ui_Infantry_group1_5.h"
 #include "ui_Infantry_group2_0.h"
 
 

@@ -14,8 +14,10 @@
 
 #include <stdint.h>
 #include "remote_control.h"
+#include "referee.h"
 
 extern RC_ctrl_t *rc_ctl;
+extern Referee_InfoTypedef *refree_data;
 extern void Robot_Frame_Init(void);
 
 
