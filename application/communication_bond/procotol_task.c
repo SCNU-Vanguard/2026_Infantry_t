@@ -59,9 +59,9 @@ static void Procotol_Task( void *argument )
 		//VOFA_Display_Roll();
 		//VOFA_Display_Speed();
 		//VOFA_Display_Power();
-		//VOFA_Display_Shoot();
+		VOFA_Display_Shoot();
 		//VOFA_Displat_AutoAiming();
-		VOFA_Display_2006_Current();
+		//VOFA_Display_2006_Current();
 		
 //		CDC_Transmit_HS((uint8_t *)"Hello\r", 6);//≤‚ ‘–Èƒ‚¥Æø⁄”√
 					

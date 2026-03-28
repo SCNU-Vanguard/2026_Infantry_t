@@ -388,7 +388,7 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
     supervisor_init_config_t supervisor_config = {
         .handler_callback = DM_Motor_Lost_Callback,
         .owner_id = instance,
-        .reload_count = 2, // 20ms未收到数据则丢失
+        .reload_count = 50, // 50ms未收到数据则丢失
     };
     instance->supervisor = Supervisor_Register(&supervisor_config);
 

@@ -1,12 +1,13 @@
 #include "control_task.h"
 #include <math.h>
+#include "defense_center.h"
 
 #define CONTROL_TASK_PERIOD 1 // ms
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
 #define YAW_DEADBAND 3 //yaw轴死区值
 #define MAX_ABS_INCREMENT 0.003 //限制电机转速增量的值
-#define CONTROL_MODE 0	//1为遥控器，0为键鼠
-#define MOUSE_BULLET_FRE 120
+#define CONTROL_MODE 1	//1为遥控器，0为键鼠
+#define MOUSE_BULLET_FRE 256
 
 osThreadId_t control_task_handle;
 uint32_t control_task_diff;//任务周期
@@ -246,6 +247,7 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 		{
 			chs -> mode = STOP_C;
 			gim -> status = GIMBAL_DISABLE;
+			gim -> ctrl_mode = SIT_NECK;			//缩头
 			shoot_mode = SHOOT_MODE_STOP;
 		}
 		
@@ -306,6 +308,7 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 			else
 			{
 				target_shoot_frequence = 0;
+				chassis_shoot_motor->motor_controller.speed_PID->output = 0;
 			}
 //			if(chassis_shoot_motor->target.current == 9000)//拨弹盘2006堵转
 //			{
@@ -364,6 +367,7 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 	{
 		chs -> mode = STOP_C;
 		gim -> status = GIMBAL_DISABLE;
+		gim -> ctrl_mode = SIT_NECK;			//缩头
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 
@@ -379,6 +383,7 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 		
 		chs -> mode = STOP_C;
 		gim -> status = GIMBAL_DISABLE;
+		gim -> ctrl_mode = SIT_NECK;			//缩头
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 
@@ -397,6 +402,7 @@ static void Control_Task(void *argument)
 		KeyboardCtrl(&gimbal_cmd, &chassis_cmd);//键鼠操纵
 #endif
 		Chassis_Cmd_Trans(&chassis_cmd, ANGLE_REFERENCE, DM_6006_yaw -> receive_data.position);//底盘坐标系转云台坐标系
+		// Supervisor_Task();
 
         control_task_diff = osKernelGetTickCount() - time;
         time = osKernelGetTickCount();

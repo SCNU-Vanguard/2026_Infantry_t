@@ -391,7 +391,7 @@ void Gimbal_Control_Remote(void)
 			shoot_permission = 0;//摩擦轮不许转
 			
 			if(yaw_to_mid < 0.85 && temp_v_pitch_neck < (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2		//yaw轴不居中且还没缩头，yaw轴要转到中间
-			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
+			&& (friction_motor[0] -> receive_flag == 0xFF || friction_motor[1] -> receive_flag == 0xFF || friction_motor[2] -> receive_flag == 0xFF))//并且摩擦轮停转
 			{
 				//yaw
 				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
@@ -403,7 +403,7 @@ void Gimbal_Control_Remote(void)
 				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
 			}
 			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MIN_ANGLE - PITCH_NECK_TRANSFORM_JUDGEMENT		//Yaw轴居中但还没缩头，yaw轴不动，等缩完头才动
-			&& friction_motor[0] -> receive_flag == 0xFF && friction_motor[1] -> receive_flag == 0xFF && friction_motor[2] -> receive_flag == 0xFF)//并且摩擦轮停转
+			&& (friction_motor[0] -> receive_flag == 0xFF || friction_motor[1] -> receive_flag == 0xFF || friction_motor[2] -> receive_flag == 0xFF))//并且摩擦轮停转
 			{
 				/*p_head*/	
 				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置
@@ -632,6 +632,28 @@ void Gimbal_Control_Remote(void)
 		DM_4310_pitch_head->motor_controller.angle_PID->output = 0;
 	}
 
+	// if (DM_4310_pitch_head->error_code&DM_MOTOR_LOST_ERROR)
+	// {
+	// 	DM_4310_pitch_head->motor_controller.angle_PID->output = 0;
+	// 	DM_4310_pitch_head->motor_controller.angle_PID->i_out = 0;
+	// 	DM_4310_pitch_head->motor_controller.speed_PID->output = 0;
+	// 	DM_4310_pitch_head->motor_controller.speed_PID->i_out = 0;
+	// }
+	// if (DM_4310_pitch_neck->error_code&DM_MOTOR_LOST_ERROR)
+	// {
+	// 	DM_4310_pitch_neck->motor_controller.angle_PID->output = 0;
+	// 	DM_4310_pitch_neck->motor_controller.angle_PID->i_out = 0;
+	// 	DM_4310_pitch_neck->motor_controller.speed_PID->output = 0;
+	// 	DM_4310_pitch_neck->motor_controller.speed_PID->i_out = 0;
+	// }
+	// if (DM_6006_yaw->error_code&DM_MOTOR_LOST_ERROR)
+	// {
+	// 	DM_6006_yaw->motor_controller.angle_PID->output = 0;
+	// 	DM_6006_yaw->motor_controller.angle_PID->i_out = 0;
+	// 	DM_6006_yaw->motor_controller.speed_PID->output = 0;
+	// 	DM_6006_yaw->motor_controller.speed_PID->i_out = 0;
+	// }
+	
     //全部电机计算
     DM_Motor_Control();
 	

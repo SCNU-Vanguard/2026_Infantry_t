@@ -69,11 +69,20 @@ static void Shoot_Motor_Sender_Grouping(shoot_motor_instance_t *motor, can_init_
 }
 
 
+
 /*摩擦轮电机接收回调函数*/
 static void Shoot_Motor_Receive(CAN_instance_t *_instance)  
 {
     uint8_t *rxbuff = _instance->rx_buff;
     shoot_motor_instance_t *motor = (shoot_motor_instance_t *)_instance->id;
+
+    Supervisor_Reload(motor->supervisor);
+    motor->dt = DWT_GetDeltaT(&motor->feed_cnt);
+
+    if (motor->error_code & SHOOT_MOTOR_LOST_ERROR)
+    {
+        motor->error_code &= ~(SHOOT_MOTOR_LOST_ERROR);
+    }
     //对接收数据的处理(接收到的数据只有data[0]中包含电机状态码，其他位均是无效数据)
     motor->receive_flag = rxbuff[0];
     // 解析电机工作状态
@@ -138,9 +147,12 @@ void  Shoot_Motor_SetTar(shoot_motor_instance_t *motor , int16_t tar)
 /*摩擦轮电机出错时的错误回调函数(目前没有任何处理)*/
 static void Shoot_Motor_Lost_Callback(void *motor_ptr)
 {
-    uint16_t can_bus;
+    // uint16_t can_bus;
+    // shoot_motor_instance_t *motor = (shoot_motor_instance_t *)motor_ptr;
+    // can_bus = motor->motor_can_instance->can_handle == &hfdcan1 ? 1 : (motor->motor_can_instance->can_handle == &hfdcan2 ? 2 : 3);
+
     shoot_motor_instance_t *motor = (shoot_motor_instance_t *)motor_ptr;
-    can_bus = motor->motor_can_instance->can_handle == &hfdcan1 ? 1 : (motor->motor_can_instance->can_handle == &hfdcan2 ? 2 : 3);
+    motor->error_code |= SHOOT_MOTOR_LOST_ERROR;
 }
 
 /*电机结构体初始化函数 */
@@ -161,7 +173,7 @@ shoot_motor_instance_t *Shoot_Motor_Init(motor_init_config_t *config)
     supervisor_init_config_t supervisor_config = {
         .handler_callback = Shoot_Motor_Lost_Callback,
         .owner_id = instance,
-        .reload_count = 2, // 20ms未收到数据则丢失
+        .reload_count = 200, // 200ms未收到数据则丢失
     };
     instance->supervisor = Supervisor_Register(&supervisor_config);
 

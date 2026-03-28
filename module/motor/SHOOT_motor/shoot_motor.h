@@ -31,6 +31,14 @@
 //     int16_t speed; // 转速 rpm
 // } Shoot_motor_fillmessage_t;
 
+typedef enum
+{
+	SHOOT_MOTOR_ERROR_NONE            = 0x00U,
+	SHOOT_MOTOR_BLOCKED_ERROR   = 0x01U,
+	SHOOT_MOTOR_LOST_ERROR      = 0x02U,
+	SHOOT_MOTOR_SUPERLOAD_ERROR = 0x04U,
+} Shoot_error_e;
+
 /**
  * @brief 摩擦轮电机的初始化结构体
  *
@@ -39,6 +47,8 @@ typedef struct
 {
     motor_type_e motor_type; // 电机类型
     motor_working_type_e motor_state_flag; //电机状态标志，用于控制电机使能或失能，与下文的
+
+    Shoot_error_e error_code;
 
     CAN_instance_t *motor_can_instance; // 电机CAN实例
     
@@ -52,6 +62,7 @@ typedef struct
 
     // 发送编号位置设置
     uint8_t message_num;
+
 } shoot_motor_instance_t;
 
 

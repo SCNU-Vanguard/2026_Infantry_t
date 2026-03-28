@@ -25,6 +25,14 @@
 
 typedef enum
 {
+	DJI_ERROR_NONE            = 0x00U,
+	DJI_MOTOR_BLOCKED_ERROR   = 0x01U,
+	DJI_MOTOR_LOST_ERROR      = 0x02U,
+	DJI_MOTOR_SUPERLOAD_ERROR = 0x04U,
+} DJI_error_e;
+
+typedef enum
+{
     ORIGIN = 0,
     RAD = 1,
     DEGREE = 2,
@@ -68,6 +76,8 @@ typedef struct
 
     motor_control_setting_t motor_settings; // 电机控制设置
     motor_controller_t motor_controller;    // 电机控制器
+
+    DJI_error_e error_code;
 
     CAN_instance_t *motor_can_instance; // 电机CAN实例
 

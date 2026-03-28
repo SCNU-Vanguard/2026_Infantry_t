@@ -178,7 +178,7 @@ void Shoot_State_Machine(void)
     static uint16_t init_count = 0;
 
 }
-
+uint8_t fir_flag;
 void Shoot_Control_Remote(void)
 {
 	switch(shoot_mode)
@@ -198,15 +198,16 @@ void Shoot_Control_Remote(void)
 				
 				Shoot_Set_All_Friction(SHOOT_V);
 				
-				if(friction_motor[0] -> receive_flag == 0xA5 && friction_motor[1] -> receive_flag == 0xA5 && friction_motor[2] -> receive_flag == 0xA5)//摩擦轮开转后再给拨弹盘设置转速
+				if(friction_motor[0] -> receive_flag == 0xA5 || friction_motor[1] -> receive_flag == 0xA5 || friction_motor[2] -> receive_flag == 0xA5)//摩擦轮开转后再给拨弹盘设置转速
 				{
 					friction_state = 1;//ui使用
-					
+					fir_flag++;
 					if(Fire_Control && gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)//键鼠控制是否使用火控
 					{
 						if(vs_aim_packet_from_nuc.mode == 1)//火控，上位机发1时拨弹盘不允许转
 						{
 							target_shoot_frequence = 0;
+							chassis_shoot_motor->motor_controller.speed_PID->output = 0;
 						}
 					}
 					
@@ -227,6 +228,13 @@ void Shoot_Control_Remote(void)
 			break;
 		}
 	}
-	//DJI_Motor_Control();
-	Shoot_Motor_Send();
+
+    // if((friction_motor[0]->error_code&SHOOT_MOTOR_LOST_ERROR) 
+    // || (friction_motor[1]->error_code&SHOOT_MOTOR_LOST_ERROR) 
+    // || (friction_motor[2]->error_code&SHOOT_MOTOR_LOST_ERROR))
+    // {
+    //     chassis_shoot_motor->motor_controller.speed_PID->output = 0;
+    //     chassis_shoot_motor->motor_controller.speed_PID->i_out = 0;
+    // }
+    Shoot_Motor_Send();
 }

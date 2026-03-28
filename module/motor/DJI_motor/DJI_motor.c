@@ -162,6 +162,10 @@ static void Decode_DJI_Motor(CAN_instance_t *_instance)
     Supervisor_Reload(motor->supervisor);
     motor->dt = DWT_GetDeltaT(&motor->feed_cnt);
 
+    if (motor->error_code & DJI_MOTOR_LOST_ERROR)
+    {
+        motor->error_code &= ~(DJI_MOTOR_LOST_ERROR);
+    }
     // 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
     measure->last_ecd = measure->ecd;
     measure->ecd = ((uint16_t)rxbuff[0]) << 8 | rxbuff[1];
@@ -203,9 +207,12 @@ static void Decode_DJI_Motor(CAN_instance_t *_instance)
 
 static void DJI_Motor_Lost_Callback(void *motor_ptr)
 {
-    uint16_t can_bus;
+    // uint16_t can_bus;
+    // DJI_motor_instance_t *motor = (DJI_motor_instance_t *)motor_ptr;
+    // can_bus = motor->motor_can_instance->can_handle == &hfdcan1 ? 1 : (motor->motor_can_instance->can_handle == &hfdcan2 ? 2 : 3);
+
     DJI_motor_instance_t *motor = (DJI_motor_instance_t *)motor_ptr;
-    can_bus = motor->motor_can_instance->can_handle == &hfdcan1 ? 1 : (motor->motor_can_instance->can_handle == &hfdcan2 ? 2 : 3);
+    motor->error_code |= DJI_MOTOR_LOST_ERROR;
 }
 
 // 电机初始化,返回一个电机实例
@@ -247,7 +254,7 @@ DJI_motor_instance_t *DJI_Motor_Init(motor_init_config_t *config)
     supervisor_init_config_t supervisor_config = {
         .handler_callback = DJI_Motor_Lost_Callback,
         .owner_id = instance,
-        .reload_count = 2, // 20ms未收到数据则丢失
+        .reload_count = 50, // 50ms未收到数据则丢失
     };
     instance->supervisor = Supervisor_Register(&supervisor_config);
 

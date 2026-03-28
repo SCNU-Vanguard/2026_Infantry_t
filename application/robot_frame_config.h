@@ -38,7 +38,7 @@
     
 #define WHEEL_RADIUS 0.077f	//驱动轮半径（diameter）
 
-#define ANGLE_REFERENCE -1.00414968f //底盘坐标系转云台坐标系角度参考值(正前方时电机编码器角度)
+#define ANGLE_REFERENCE -0.917861938f //底盘坐标系转云台坐标系角度参考值(正前方时电机编码器角度)
 #define ANGLE_STAND -0.91009593f	//底盘跟随的电机编码器角度，此角度才能抬头
 
 #define OMEGA_FOLLOW_MAX_ADD 0.0005f	//底盘跟随斜坡

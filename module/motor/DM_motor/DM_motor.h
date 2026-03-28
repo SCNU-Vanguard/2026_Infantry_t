@@ -43,7 +43,7 @@ typedef enum
 	DM_ERROR_NONE            = 0x00U,
 	DM_MOTOR_BLOCKED_ERROR   = 0x01U,
 	DM_MOTOR_LOST_ERROR      = 0x02U,
-	DM_MOTOR_SUPERLOAD_ERROR = 0x03U,
+	DM_MOTOR_SUPERLOAD_ERROR = 0x04U,
 } DM_error_e;
 
 typedef struct
@@ -89,6 +89,8 @@ typedef struct
 
 	motor_control_setting_t motor_settings; // 电机设置
 	motor_controller_t motor_controller;    // 电机控制器
+	
+	DM_error_e error_code;
 
 	CAN_instance_t *motor_can_instance;
 
@@ -110,7 +112,6 @@ typedef struct
 	uint16_t dm_mode;
 	uint16_t contorl_mode_state;
 	float dm_offset_control;
-	DM_error_e error_code;
 	uint32_t error_beat;
 } DM_motor_t;
 

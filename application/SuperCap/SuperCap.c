@@ -5,6 +5,7 @@
 
 #define POWER_LIMIT 75		//裁判限制功率 refree_data->Game_Robot_state.chassis_power_limit
 #define ENERGY_BUFFER 60	//裁判能量缓冲 refree_data->Power_Heat_Data.buffer_energy
+//uint8_t *data = NULL;
 
 
 Chassis_Power_instance_t *SuperCap_Data;
@@ -22,7 +23,7 @@ static void Chassis_Power_Decode(CAN_instance_t *can_instance)
     uint8_t statusCode = 0;
     uint32_t power_uint32 = 0;
     float chassisPower = 0.0f;
-    float chassisPowerLimit   = 0.0f;
+    uint16_t chassisPowerLimit = 0;
 
     statusCode = data[0];
     
@@ -39,7 +40,6 @@ static void Chassis_Power_Decode(CAN_instance_t *can_instance)
     SuperCap_Data->ChassisPower = chassisPower;
     SuperCap_Data->ChassisPowerLimit   = chassisPowerLimit;
     SuperCap_Data->CapEnergy = capEnergy;
-	
 }
 
 Chassis_Power_instance_t *Chassis_Power_Init(void)
