@@ -11,10 +11,17 @@
 #define constant 2.6259f  // 常量  底盘静态功率/电机数量(4个)
 
 void chassis_power_control(void);
+void Power_Control();
 
 extern float chassis_max_power;
 extern float P_total;
 extern float I_test[4];
 extern float P_test;
+
+typedef enum
+{
+	SUPERCAP_CONTROL = 0,
+	CODE_CONTROL = 1,
+} control_mode_e;//功率控制模式
 
 #endif

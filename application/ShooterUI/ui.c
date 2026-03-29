@@ -111,7 +111,7 @@ void ui_reinit() // 重新创建所有元素的函数，由于下位机上电时
 }
 
 
-void update_shooter_ui(float gimbal_delta, uint8_t cap_level, uint8_t auto_status, uint8_t fric_status, uint8_t error_num) // 更新所有UI的函数，gimbal_delta为（云台角度-底盘角度），正中间为0度，顺时针为正，弧度制；cap_level为超电剩余百分比；auto_status为自瞄状态，2为自瞄中，1为自瞄已准备好，否则为0；fric_status为摩擦轮状态，开启为1，否则为0
+void update_shooter_ui(float gimbal_delta, uint8_t cap_level, uint8_t auto_status, uint8_t fric_status, uint8_t sta_num) // 更新所有UI的函数，gimbal_delta为（云台角度-底盘角度），正中间为0度，顺时针为正，弧度制；cap_level为超电剩余百分比；auto_status为自瞄状态，2为自瞄中，1为自瞄已准备好，否则为0；fric_status为摩擦轮状态，开启为1，否则为0
 {
 
 	// 更新云台方向
@@ -179,7 +179,7 @@ void UI_Task(void *argument)//此处根据自己代码的结构体自行更改id
 	for (;;)
 	{
 
-		if (shoot_mode == SHOOT_MODE_FIRE)
+		if (friction_state)
 			fric_flag = 1;
 		else
 			fric_flag = 0;
@@ -193,7 +193,7 @@ void UI_Task(void *argument)//此处根据自己代码的结构体自行更改id
 
 		delta_gim = yaw_to_mid_error;
 		
-		supercap_energy = (uint8_t)(SuperCap_Data->CapEnergy);
+		supercap_energy = (SuperCap_Data->CapEnergy);
 
 		update_shooter_ui(delta_gim, supercap_energy, auto_flag, fric_flag, SuperCap_Data->StatusCode); // 更新UI
 

@@ -3,11 +3,6 @@
 #include "SuperCap.h"
 #include "chassis.h"
 
-#define POWER_LIMIT 75		//裁判限制功率 refree_data->Game_Robot_state.chassis_power_limit
-#define ENERGY_BUFFER 60	//裁判能量缓冲 refree_data->Power_Heat_Data.buffer_energy
-//uint8_t *data = NULL;
-
-
 Chassis_Power_instance_t *SuperCap_Data;
 
 void Super_Power_Init(void)
@@ -25,7 +20,7 @@ static void Chassis_Power_Decode(CAN_instance_t *can_instance)
     float chassisPower = 0.0f;
     uint16_t chassisPowerLimit = 0;
 
-    statusCode = data[0];
+    statusCode = data[0] & 0x03;//只要低两位
     
     power_uint32 |= (data[1] << 0);
     power_uint32 |= (data[2] << 8); 

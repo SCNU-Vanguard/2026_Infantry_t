@@ -2,7 +2,8 @@
 #define __SUPERPOWER_H__
 #include "bsp_can.h"
 
-
+#define POWER_LIMIT 75		//裁判限制功率 refree_data->Game_Robot_state.chassis_power_limit
+#define ENERGY_BUFFER 60	//裁判能量缓冲 refree_data->Power_Heat_Data.buffer_energy
 
 // can_init_config_t Chassis_power_can_init_config = {
 //     .can_handle = &hfdcan2,

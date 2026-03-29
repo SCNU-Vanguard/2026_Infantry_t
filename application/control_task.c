@@ -240,25 +240,25 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 		{
 			chs -> mode = FOLLOW;
 			gim -> status = GIMBAL_ENABLE;
-			gim -> ctrl_mode = SIT_NECK;//缩头
+			gim -> ctrl_mode = STAND_NECK;//缩头
 			shoot_mode = SHOOT_MODE_STOP;
 		}
 		else if(rc_ctl -> key[KEY_PRESS].b)//全车失能
 		{
 			chs -> mode = STOP_C;
 			gim -> status = GIMBAL_DISABLE;
-			gim -> ctrl_mode = SIT_NECK;			//缩头
+			gim -> ctrl_mode = STAND_NECK;			//缩头
 			shoot_mode = SHOOT_MODE_STOP;
 		}
 		
-		if(rc_ctl -> key[KEY_PRESS].c)//伸头
-		{
-			gim -> ctrl_mode = STAND_NECK;
-		}
-		else if(rc_ctl -> key[KEY_PRESS].v)//缩头
-		{
-			gim -> ctrl_mode = SIT_NECK;
-		}
+//		if(rc_ctl -> key[KEY_PRESS].c)//伸头
+//		{
+//			gim -> ctrl_mode = STAND_NECK;
+//		}
+//		else if(rc_ctl -> key[KEY_PRESS].v)//缩头
+//		{
+//			gim -> ctrl_mode = SIT_NECK;
+//		}
 		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//开关自瞄
@@ -367,7 +367,7 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 	{
 		chs -> mode = STOP_C;
 		gim -> status = GIMBAL_DISABLE;
-		gim -> ctrl_mode = SIT_NECK;			//缩头
+		gim -> ctrl_mode = STAND_NECK;			//缩头
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 
@@ -383,7 +383,7 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 		
 		chs -> mode = STOP_C;
 		gim -> status = GIMBAL_DISABLE;
-		gim -> ctrl_mode = SIT_NECK;			//缩头
+		gim -> ctrl_mode = STAND_NECK;			//缩头
 		shoot_mode = SHOOT_MODE_STOP;
 	}
 

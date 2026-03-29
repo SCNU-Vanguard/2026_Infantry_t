@@ -331,7 +331,7 @@ void Gimbal_Init(void)
 
     DM_4310_pitch_head = DM_Motor_Init(&p_h_4310);
 
-    DM_4310_pitch_neck = DM_Motor_Init(&p_n_4310);
+//    DM_4310_pitch_neck = DM_Motor_Init(&p_n_4310);
 
     DM_6006_yaw = DM_Motor_Init(&dm_6006_yaw);
 
@@ -340,21 +340,21 @@ void Gimbal_Init(void)
 void Gimbal_Enable(void)
 {
     DM_Motor_ENABLE(DM_4310_pitch_head);
-    DM_Motor_ENABLE(DM_4310_pitch_neck);
+//    DM_Motor_ENABLE(DM_4310_pitch_neck);
     DM_Motor_ENABLE(DM_6006_yaw);
 }
 
 void Gimbal_Disable(void)
 {
     DM_Motor_DISABLE(DM_4310_pitch_head);
-    DM_Motor_DISABLE(DM_4310_pitch_neck);
+//    DM_Motor_DISABLE(DM_4310_pitch_neck);
     DM_Motor_DISABLE(DM_6006_yaw);
 }
 
 void Gimbal_Stop(void)
 {
     DM_Motor_Stop(DM_4310_pitch_head);
-    DM_Motor_Stop(DM_4310_pitch_neck);
+//    DM_Motor_Stop(DM_4310_pitch_neck);
     DM_Motor_Stop(DM_6006_yaw);
 }
 
@@ -382,128 +382,128 @@ void Gimbal_Control_Remote(void)
 	{
 		Gimbal_Enable();
 		DM_Motor_Start(DM_4310_pitch_head);
-		DM_Motor_Start(DM_4310_pitch_neck);
+//		DM_Motor_Start(DM_4310_pitch_neck);
 		DM_Motor_Start(DM_6006_yaw);
 
-		//根据neck角度来更改pitch上下限角度
-		if (gimbal_cmd.ctrl_mode == SIT_NECK)
-		{
-			shoot_permission = 0;//摩擦轮不许转
-			
-			if(yaw_to_mid < 0.85 && temp_v_pitch_neck < (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2		//yaw轴不居中且还没缩头，yaw轴要转到中间
-			&& (friction_motor[0] -> receive_flag == 0xFF || friction_motor[1] -> receive_flag == 0xFF || friction_motor[2] -> receive_flag == 0xFF))//并且摩擦轮停转
-			{
-				//yaw
-				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
-				if ( temp_v_yaw > PI )
-						temp_v_yaw -= 2 * PI;
-				else if( temp_v_yaw < -PI )
-						temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
-																									
-				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
-			}
-			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MIN_ANGLE - PITCH_NECK_TRANSFORM_JUDGEMENT		//Yaw轴居中但还没缩头，yaw轴不动，等缩完头才动
-			&& (friction_motor[0] -> receive_flag == 0xFF || friction_motor[1] -> receive_flag == 0xFF || friction_motor[2] -> receive_flag == 0xFF))//并且摩擦轮停转
-			{
-				/*p_head*/	
-				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置
-				{
-					temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
-				}
-				else if(temp_v_pitch_head < PITCH_HEAD_MID_ANGLE)
-				{
-					temp_v_pitch_head += PITCH_HEAD_TRANSFORM_SPEED;
-				}
-				else if(temp_v_pitch_head > PITCH_HEAD_MID_ANGLE)
-				{
-					temp_v_pitch_head -= PITCH_HEAD_TRANSFORM_SPEED;
-				}
-				
-				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
-				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
+//		//根据neck角度来更改pitch上下限角度
+//		if (gimbal_cmd.ctrl_mode == SIT_NECK)
+//		{
+//			shoot_permission = 0;//摩擦轮不许转
+//			
+//			if(yaw_to_mid < 0.85 && temp_v_pitch_neck < (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2		//yaw轴不居中且还没缩头，yaw轴要转到中间
+//			&& (friction_motor[0] -> receive_flag == 0xFF || friction_motor[1] -> receive_flag == 0xFF || friction_motor[2] -> receive_flag == 0xFF))//并且摩擦轮停转
+//			{
+//				//yaw
+//				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
+//				if ( temp_v_yaw > PI )
+//						temp_v_yaw -= 2 * PI;
+//				else if( temp_v_yaw < -PI )
+//						temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
+//																									
+//				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+//			}
+//			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MIN_ANGLE - PITCH_NECK_TRANSFORM_JUDGEMENT		//Yaw轴居中但还没缩头，yaw轴不动，等缩完头才动
+//			&& (friction_motor[0] -> receive_flag == 0xFF || friction_motor[1] -> receive_flag == 0xFF || friction_motor[2] -> receive_flag == 0xFF))//并且摩擦轮停转
+//			{
+//				/*p_head*/	
+//				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置
+//				{
+//					temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
+//				}
+//				else if(temp_v_pitch_head < PITCH_HEAD_MID_ANGLE)
+//				{
+//					temp_v_pitch_head += PITCH_HEAD_TRANSFORM_SPEED;
+//				}
+//				else if(temp_v_pitch_head > PITCH_HEAD_MID_ANGLE)
+//				{
+//					temp_v_pitch_head -= PITCH_HEAD_TRANSFORM_SPEED;
+//				}
+//				
+//				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
+//				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 
-				/*p_neck*/ /*POS_mode 做特殊处理*/
-//				temp_v_pitch_neck += PITCH_NECK_TRANSFORM_SPEED;
-				temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
-				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
-				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);//设置目标值
-			}
-			else
-			{
-				//yaw
-				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
-				if ( temp_v_yaw > PI )
-						temp_v_yaw -= 2 * PI;
-				else if( temp_v_yaw < -PI )
-						temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
-																									
-				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
-			
-				/*p_head*/	
-				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置
-				{
-					temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
-				}
-				else if(temp_v_pitch_head < PITCH_HEAD_MID_ANGLE)
-				{
-					temp_v_pitch_head += PITCH_HEAD_TRANSFORM_SPEED;
-				}
-				else if(temp_v_pitch_head > PITCH_HEAD_MID_ANGLE)
-				{
-					temp_v_pitch_head -= PITCH_HEAD_TRANSFORM_SPEED;
-				}
-				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
-				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
-				
-				if(fabs(DM_4310_pitch_head->receive_data.position - PITCH_HEAD_CLIMBING_ANGLE) < PITCH_HEAD_CLIMBING_JUDGEMENT)
-				{
-					Climbing_Hill();//进入爬坡状态
-				}
+////				/*p_neck*/ /*POS_mode 做特殊处理*/
+//////				temp_v_pitch_neck += PITCH_NECK_TRANSFORM_SPEED;
+////				temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
+////				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
+////				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
+////				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);//设置目标值
+//			}
+//			else
+//			{
+//				//yaw
+//				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
+//				if ( temp_v_yaw > PI )
+//						temp_v_yaw -= 2 * PI;
+//				else if( temp_v_yaw < -PI )
+//						temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
+//																									
+//				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+//			
+//				/*p_head*/	
+//				if(fabsf(temp_v_pitch_head - PITCH_HEAD_MID_ANGLE) < PITCH_HEAD_TRANSFORM_JUDGEMENT)//从STAND到SIT过渡时，缓慢到达中间位置
+//				{
+//					temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
+//				}
+//				else if(temp_v_pitch_head < PITCH_HEAD_MID_ANGLE)
+//				{
+//					temp_v_pitch_head += PITCH_HEAD_TRANSFORM_SPEED;
+//				}
+//				else if(temp_v_pitch_head > PITCH_HEAD_MID_ANGLE)
+//				{
+//					temp_v_pitch_head -= PITCH_HEAD_TRANSFORM_SPEED;
+//				}
+//				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
+//				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
+//				
+//				if(fabs(DM_4310_pitch_head->receive_data.position - PITCH_HEAD_CLIMBING_ANGLE) < PITCH_HEAD_CLIMBING_JUDGEMENT)
+//				{
+//					Climbing_Hill();//进入爬坡状态
+//				}
 
-				/*p_neck*/ /*POS_mode 做特殊处理*/
-				temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
-				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
-				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);//设置目标值
-			}
-		}
+////				/*p_neck*/ /*POS_mode 做特殊处理*/
+////				temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
+////				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
+////				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
+////				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);//设置目标值
+//			}
+//		}
 
-		else if(gimbal_cmd.ctrl_mode == STAND_NECK)
+		if(gimbal_cmd.ctrl_mode == STAND_NECK)
 		{
 			Not_Climbing_Hill();//清除爬坡状态
 			
-			if(yaw_to_mid < 0.85 && temp_v_pitch_neck > (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2)//Yaw轴不居中并且还没抬头----不能抬头，要转到中间才行
-			{
-				//YAW
-				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
-				if ( temp_v_yaw > PI )
-						temp_v_yaw -= 2 * PI;
-				else if( temp_v_yaw < -PI )
-						temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
-																									
-				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
-				
-				//head
-				temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
-				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
-			}
-			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position > PITCH_NECK_ACTUAL_MAX_ANGLE + PITCH_NECK_TRANSFORM_JUDGEMENT)//Yaw轴居中但还没抬头，yaw轴不动，等抬完头才动
-			{
-				//head
-				temp_v_pitch_head -= PITCH_HEAD_STAND_ADD;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
-				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
-					
-				//维持neck位置
-//				temp_v_pitch_neck -= PITCH_NECK_TRANSFORM_SPEED;
-				temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
-				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
-				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
-			}
-			else//已经抬头
+//			if(yaw_to_mid < 0.85 && temp_v_pitch_neck > (PITCH_NECK_MIN_ANGLE + PITCH_NECK_MAX_ANGLE)/2)//Yaw轴不居中并且还没抬头----不能抬头，要转到中间才行
+//			{
+//				//YAW
+//				temp_v_yaw += gimbal_cmd.v_yaw * YAW_COEFFICIENT;
+//				if ( temp_v_yaw > PI )
+//						temp_v_yaw -= 2 * PI;
+//				else if( temp_v_yaw < -PI )
+//						temp_v_yaw += 2 * PI;//保持在-pi ~ PI范围内
+//																									
+//				DM_Motor_SetTar(DM_6006_yaw, temp_v_yaw);//设置目标值  ， pid_out 顺负逆正  ， v 顺正
+//				
+//				//head
+//				temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
+//				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);//head 最小限制
+//				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
+//			}
+//			else if(yaw_to_mid > 0.85 && DM_4310_pitch_neck -> receive_data.position > PITCH_NECK_ACTUAL_MAX_ANGLE + PITCH_NECK_TRANSFORM_JUDGEMENT)//Yaw轴居中但还没抬头，yaw轴不动，等抬完头才动
+//			{
+//				//head
+//				temp_v_pitch_head -= PITCH_HEAD_STAND_ADD;
+//				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
+//				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
+//					
+////				//维持neck位置
+//////				temp_v_pitch_neck -= PITCH_NECK_TRANSFORM_SPEED;
+////				temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
+////				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
+////				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
+////				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
+//			}
+//			else//已经抬头
 			{
 				shoot_permission = 1;//摩擦轮允许转
 				
@@ -520,22 +520,22 @@ void Gimbal_Control_Remote(void)
 				USER_LIMIT_MIN_MAX(temp_v_pitch_head, PITCH_HEAD_MAX_ANGLE, PITCH_HEAD_MIN_ANGLE);
 				DM_Motor_SetTar(DM_4310_pitch_head, temp_v_pitch_head);//设置目标值
 					
-				//维持neck位置
-				temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
-				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
-				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
+//				//维持neck位置
+//				temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
+//				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
+//				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
+//				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
 			}
 		}
 		else if(gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)
 		{
-			if(DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MAX_ANGLE + PITCH_NECK_TRANSFORM_JUDGEMENT)//确认已经抬头
+//			if(DM_4310_pitch_neck -> receive_data.position < PITCH_NECK_ACTUAL_MAX_ANGLE + PITCH_NECK_TRANSFORM_JUDGEMENT)//确认已经抬头
 			{
 				//维持neck位置
-				temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
-				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
-				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
-				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
+//				temp_v_pitch_neck = PITCH_NECK_MAX_ANGLE;
+//				USER_LIMIT_MIN_MAX(temp_v_pitch_neck, PITCH_NECK_MAX_ANGLE, PITCH_NECK_MIN_ANGLE);//限制脖子电机转动范围
+//				DM_4310_pitch_neck -> transmit_data.velocity_des = PITCH_NECK_MAX_SPEED;   //设置转动时的最大速度
+//				DM_Motor_SetTar(DM_4310_pitch_neck, temp_v_pitch_neck);
 				
 				//head
 //				if(vs_aim_packet_from_nuc.pitch != 0)//视觉未识别到会传回0，不为0才处理数据
@@ -620,7 +620,7 @@ void Gimbal_Control_Remote(void)
 		
 		//temp_v_yaw = 0;
 		temp_v_pitch_head = PITCH_HEAD_MID_ANGLE;
-		temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
+//		temp_v_pitch_neck = PITCH_NECK_MIN_ANGLE;
 		//维持当前角度但不作PID计算，pid_ref清零，不计算
 		
 		Gimbal_Stop();

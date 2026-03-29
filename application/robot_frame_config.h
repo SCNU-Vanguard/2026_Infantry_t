@@ -67,7 +67,7 @@
 #define PITCH_NECK_TRANSFORM_JUDGEMENT 0.03f //伸缩变换时使用的判断值
 
 #define PITCH_HEAD_MIN_ANGLE  0.15f //0.18//rad , 对应伸头时的最低角度
-#define PITCH_HEAD_MID_ANGLE  -0.08f //rad , 对应中间的角度
+#define PITCH_HEAD_MID_ANGLE  0.00f //rad , 对应中间的角度
 #define PITCH_HEAD_MAX_ANGLE  -0.38f  //rad , 对应伸出头时的最高角度
 //#define PITCH_HEAD_MAX_SPEED  0.001f // rad/s
 #define PITCH_HEAD_TRANSFORM_SPEED 0.0016f //伸缩变换时使用的过渡增量
