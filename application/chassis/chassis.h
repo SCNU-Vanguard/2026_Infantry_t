@@ -56,5 +56,6 @@ extern Chassis_CmdTypedef chassis_cmd;
 extern float omega_z;
 extern float target_speed[4];
 extern uint8_t Chassis_Follow_Flag;
+extern PID_t omega_follow_pid;
 
 #endif /* __CHASSIS_H__ */

@@ -22,6 +22,6 @@ typedef enum
 {
 	SUPERCAP_CONTROL = 0,
 	CODE_CONTROL = 1,
-} control_mode_e;//功率控制模式
+} power_control_mode_e;//功率控制模式
 
 #endif

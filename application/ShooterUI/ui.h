@@ -57,7 +57,7 @@ typedef struct
 	
 }__attribute__((packed)) ui_cmd_t;
 
-void UI_Task_Init(void);
+//void UI_Task_Init(void);
 
 void ui_init();
 void ui_reinit();

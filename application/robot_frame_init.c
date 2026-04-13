@@ -43,12 +43,14 @@
 #include "BMI088driver.h"
 #include "remote_control.h"
 #include "referee.h"
+#include "referee_task.h"
 
-#include "ui.h"
+
+//#include "referee_task.h"
 
 float init_time;
 RC_ctrl_t *rc_ctl;
-Referee_InfoTypedef *refree_data;
+//Referee_InfoTypedef *refree_data;
 
 static void Frame_MCU_Init(void)
 {
@@ -74,9 +76,9 @@ static void Frame_Device_Init(void)
 	
 	Super_Power_Init();
 	
-	refree_data=Referee_Init(&huart10);
+//	refree_data=Referee_Init(&huart10);
 
-    ui_init();
+//    ui_init();
 }
 
 /*
@@ -98,8 +100,10 @@ static void Frame_Task_Init(void)
     Shoot_Task_Init();
 
     Procotol_Task_Init();
+	
+	referee_outer_info = UI_Task_Init(&huart10, &referee_outer_interactive);
 
-    UI_Task_Init();
+//    UI_Task_Init();
 
     //VPC_Task_Init();
 }

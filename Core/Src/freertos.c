@@ -27,8 +27,10 @@
 /* USER CODE BEGIN Includes */
 #include "buzzer.h"
 #include "ws2812.h"
-
+#include "remote_control.h"
 #include "bmi088.h"
+
+#include "referee_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +45,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+extern RC_ctrl_t *rc_ctl;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -60,12 +62,24 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+osThreadId_t UI_TaskHandle;
+uint32_t UI_TaskBuffer[512];
+StaticTask_t UI_TaskControlBlock;
+const osThreadAttr_t UI_Task_attributes = {
+    .name = "UI_Task",
+    .cb_mem = &UI_TaskControlBlock,
+    .cb_size = sizeof(UI_TaskControlBlock),
+    .stack_mem = &UI_TaskBuffer[0],
+    .stack_size = sizeof(UI_TaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
+};
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
 
 extern void MX_USB_DEVICE_Init(void);
+void Start_UI_Task(void *argument);
+
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
@@ -100,6 +114,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  UI_TaskHandle = osThreadNew(Start_UI_Task, NULL, &UI_Task_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -139,6 +154,36 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void Start_UI_Task(void *argument)
+{
+  /* USER CODE BEGIN Start_UI_Task */
+  uint8_t first_flag = 0;
+  osDelay(1500);
+  /* Infinite loop */
+  for (;;)
+  {
+    static uint8_t last_key_cnt[16] = {0};
+    static uint8_t key_mode_last = 0;
+#define KEY_CLICK(k) (rc_ctl->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
+#define KEY_ACK(k) (last_key_cnt[(k)] = rc_ctl->key_count[KEY_PRESS][(k)])
+    if (first_flag == 0)
+    {
+      User_UI_Init();
+      first_flag = 1;
+    }
+    if (KEY_CLICK(Key_X))
+    {
+      User_UI_Init();
+      osDelay(910);
+      KEY_ACK(Key_X);
+    }
+#undef KEY_CLICK
+#undef KEY_ACK
+    UI_Task();
+  }
+  /* USER CODE END Start_UI_Task */
+}
+
 
 /* USER CODE END Application */
 

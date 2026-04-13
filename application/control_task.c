@@ -1,6 +1,9 @@
 #include "control_task.h"
 #include <math.h>
 #include "defense_center.h"
+#include "rm_referee.h"
+#include "referee_task.h"
+#include "ramp.h"
 
 #define CONTROL_TASK_PERIOD 1 // ms
 #define BIAS_DEADBAND 0.1 //底盘坐标系转云台坐标系角度死区
@@ -24,6 +27,9 @@ uint32_t x = 0;
 uint32_t t = 0;
 
 uint8_t Close_Spin_Flag;
+Control_Mode_e Control_Mode;
+uint8_t Chassis_Follow_Judgement;
+uint8_t SuperCap_Forced_Use_Flag = 0;
 
 // static publisher_t *chassis_publisher;
 // static subscriber_t *chassis_subscriber;
@@ -137,7 +143,7 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 		chs -> omega_z = 0;
 		
 		shoot_mode = SHOOT_MODE_FIRE;
-		target_shoot_frequence = abs(rc_ctl->rc . dial) / 660.0 * 300.0;
+		target_shoot_frequence = abs(rc_ctl->rc . dial) / 660.0f * 100.0f;
 	}
 	else if( rc_ctl -> rc . switch_left == 3 )									//全车使能
 	{
@@ -184,73 +190,92 @@ void Remote_Ctrl (Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)
 	{
 		gim -> ctrl_mode = STAND_NECK;			//伸头
 		gim -> v_pitch_head = (float)- rc_ctl -> rc . rocker_r1 * REMOTE_PITCH_SEN ;//
+//		Chassis_Follow_Judgement = 0;
 	}
 	else if( rc_ctl -> rc . switch_right == 2 || rc_ctl -> rc . switch_right == 0)
 	{
 		gim -> ctrl_mode = SIT_NECK;			//缩头
+//		if(Chassis_Follow_Flag == 1 && Chassis_Follow_Judgement == 0)
+//		{
+//			Chassis_Follow_Judgement = 1;
+//			chassis_cmd.omega_follow = 0;
+//			Chassis_Follow_Flag = 0;
+//		}
+//		else if(Chassis_Follow_Flag == 0 && Chassis_Follow_Judgement == 0)
+//		{
+//			Chassis_Follow_Judgement = 1;
+//			Chassis_Follow_Flag = 1;
+//		}
 	}
 
 }
 
 void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 {
-	if(rc_ctl -> rc . switch_left == 3)//先加个遥控器的档位做保护
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//底盘
+	if(rc_ctl -> key[KEY_PRESS].shift)
 	{
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//底盘
-		chs -> vx = Ramp_data1((uint8_t)rc_ctl -> key[KEY_PRESS].w) - Ramp_data2((uint8_t)rc_ctl -> key[KEY_PRESS].s);
-		chs -> vy = Ramp_data3((uint8_t)rc_ctl -> key[KEY_PRESS].d) - Ramp_data4((uint8_t)rc_ctl -> key[KEY_PRESS].a);
+		MAX_SPEED = 3.5f;
+	}
+	else
+	{
+		MAX_SPEED = 1.0f;
+	}
+	
+	chs -> vx = Ramp_data1((uint8_t)rc_ctl -> key[KEY_PRESS].w) - Ramp_data2((uint8_t)rc_ctl -> key[KEY_PRESS].s);
+	chs -> vy = Ramp_data3((uint8_t)rc_ctl -> key[KEY_PRESS].d) - Ramp_data4((uint8_t)rc_ctl -> key[KEY_PRESS].a);
 //		chs -> omega_z = Ramp_data5((uint8_t)rc_ctl -> key[KEY_PRESS].e) - Ramp_data6((uint8_t)rc_ctl -> key[KEY_PRESS].q);	//小陀螺转速
-		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//云台
-		if(fabsf(temp_x - rc_ctl -> mouse.x) <= KEYBOARD_YAW_MAX_ADD)
-		{
-			temp_x = rc_ctl -> mouse.x;
-		}
-		else if(temp_x < rc_ctl -> mouse.x)
-		{
-			temp_x += KEYBOARD_YAW_MAX_ADD;
-		}
-		else if(temp_x > rc_ctl -> mouse.x)
-		{
-			temp_x -= KEYBOARD_YAW_MAX_ADD;
-		}
-		gim -> v_yaw = Gimbal_limit(temp_x) * KEYBOARD_YAW_SEN;
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//云台
+	if(fabsf(temp_x - rc_ctl -> mouse.x) <= KEYBOARD_YAW_MAX_ADD)
+	{
+		temp_x = rc_ctl -> mouse.x;
+	}
+	else if(temp_x < rc_ctl -> mouse.x)
+	{
+		temp_x += KEYBOARD_YAW_MAX_ADD;
+	}
+	else if(temp_x > rc_ctl -> mouse.x)
+	{
+		temp_x -= KEYBOARD_YAW_MAX_ADD;
+	}
+	gim -> v_yaw = Gimbal_limit(temp_x) * KEYBOARD_YAW_SEN;
 //		gim -> v_yaw = Gimbal_limit((float)rc_ctl -> mouse.x) * KEYBOARD_YAW_SEN;
-		
-		if(fabsf(temp_y - rc_ctl -> mouse.y) <= KEYBOARD_YAW_MAX_ADD)
-		{
-			temp_y = rc_ctl -> mouse.y;
-		}
-		else if(temp_y < rc_ctl -> mouse.y)
-		{
-			temp_y += KEYBOARD_YAW_MAX_ADD;
-		}
-		else if(temp_y > rc_ctl -> mouse.y)
-		{
-			temp_y -= KEYBOARD_YAW_MAX_ADD;
-		}
-		gim -> v_pitch_head = Gimbal_limit(temp_y) * KEYBOARD_PITCH_SEN;
+	
+	if(fabsf(temp_y - rc_ctl -> mouse.y) <= KEYBOARD_YAW_MAX_ADD)
+	{
+		temp_y = rc_ctl -> mouse.y;
+	}
+	else if(temp_y < rc_ctl -> mouse.y)
+	{
+		temp_y += KEYBOARD_YAW_MAX_ADD;
+	}
+	else if(temp_y > rc_ctl -> mouse.y)
+	{
+		temp_y -= KEYBOARD_YAW_MAX_ADD;
+	}
+	gim -> v_pitch_head = Gimbal_limit(temp_y) * KEYBOARD_PITCH_SEN;
 //		gim -> v_pitch_head = Gimbal_limit((float)rc_ctl -> mouse.y) * KEYBOARD_PITCH_SEN;
-		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//使能失能及伸缩头
-		if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].b)//全车使能
-		{
-			chs -> mode = FOLLOW;
-			gim -> status = GIMBAL_ENABLE;
-			gim -> ctrl_mode = STAND_NECK;//缩头
-			shoot_mode = SHOOT_MODE_STOP;
-		}
-		else if(rc_ctl -> key[KEY_PRESS].b)//全车失能
-		{
-			chs -> mode = STOP_C;
-			gim -> status = GIMBAL_DISABLE;
-			gim -> ctrl_mode = STAND_NECK;			//缩头
-			shoot_mode = SHOOT_MODE_STOP;
-		}
-		
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//使能失能及伸缩头
+	if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].b)//全车使能
+	{
+		chs -> mode = FOLLOW;
+		gim -> status = GIMBAL_ENABLE;
+		gim -> ctrl_mode = STAND_NECK;//缩头
+		shoot_mode = SHOOT_MODE_STOP;
+	}
+	else if(rc_ctl -> key[KEY_PRESS].b)//全车失能
+	{
+		chs -> mode = STOP_C;
+		gim -> status = GIMBAL_DISABLE;
+		gim -> ctrl_mode = SIT_NECK;			//缩头
+		shoot_mode = SHOOT_MODE_STOP;
+	}
+	
 //		if(rc_ctl -> key[KEY_PRESS].c)//伸头
 //		{
 //			gim -> ctrl_mode = STAND_NECK;
@@ -259,134 +284,133 @@ void KeyboardCtrl(Gimbal_CmdTypedef *gim, Chassis_CmdTypedef *chs)//键鼠
 //		{
 //			gim -> ctrl_mode = SIT_NECK;
 //		}
-		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//开关自瞄
-		if(gim -> ctrl_mode == STAND_NECK)//伸头时判断是否开自瞄
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//开关自瞄
+	if(gim -> ctrl_mode == STAND_NECK)//伸头时判断是否开自瞄
+	{
+		if(rc_ctl -> mouse.press_r == 1 && vs_aim_packet_from_nuc.pitch != 0)
 		{
-			if(rc_ctl -> mouse.press_r == 1 && vs_aim_packet_from_nuc.pitch != 0)
-			{
-				gim -> ctrl_mode = AUTOMATIC_AIMING;//自瞄
-			}
+			gim -> ctrl_mode = AUTOMATIC_AIMING;//自瞄
 		}
-		else if(gim -> ctrl_mode == AUTOMATIC_AIMING)//自瞄时判断是否退出自瞄
+	}
+	else if(gim -> ctrl_mode == AUTOMATIC_AIMING)//自瞄时判断是否退出自瞄
+	{
+		if(rc_ctl -> key[KEY_PRESS].c)//按住shift并开自瞄为不使用火控
 		{
-			if(rc_ctl -> key[KEY_PRESS].shift)//按住shift并开自瞄为不使用火控
-			{
-				Fire_Control = 0;
-			}
-			else
-			{
-				Fire_Control = 1;
-			}
-			
-			if(rc_ctl -> mouse.press_r == 0 || vs_aim_packet_from_nuc.pitch == 0)//上位机不传数据就人为接管
-			{
-				gim -> ctrl_mode = STAND_NECK;//退出自瞄
-			}
+			Fire_Control = 0;
+		}
+		else
+		{
+			Fire_Control = 1;
 		}
 		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//开关摩擦轮
-		if(rc_ctl -> key[KEY_PRESS].f)//开摩擦轮
+		if(rc_ctl -> mouse.press_r == 0 || vs_aim_packet_from_nuc.pitch == 0)//上位机不传数据就人为接管
 		{
-			shoot_mode = SHOOT_MODE_FIRE;
+			gim -> ctrl_mode = STAND_NECK;//退出自瞄
 		}
-		else if(rc_ctl -> key[KEY_PRESS].r)//关摩擦轮
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//开关摩擦轮
+	if(rc_ctl -> key[KEY_PRESS].f)//开摩擦轮
+	{
+		shoot_mode = SHOOT_MODE_FIRE;
+	}
+	else if(rc_ctl -> key[KEY_PRESS].r)//关摩擦轮
+	{
+		shoot_mode = SHOOT_MODE_STOP;
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//开枪
+	if(gim -> ctrl_mode == STAND_NECK || gim -> ctrl_mode == AUTOMATIC_AIMING)//抬头和自瞄时检测是否开枪
+	{
+		if(rc_ctl -> mouse.press_l == 1)
 		{
-			shoot_mode = SHOOT_MODE_STOP;
+			target_shoot_frequence = MOUSE_BULLET_FRE;
 		}
-		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//开枪
-		if(gim -> ctrl_mode == STAND_NECK || gim -> ctrl_mode == AUTOMATIC_AIMING)//抬头和自瞄时检测是否开枪
+		else
 		{
-			if(rc_ctl -> mouse.press_l == 1)
-			{
-				target_shoot_frequence = MOUSE_BULLET_FRE;
-			}
-			else
-			{
-				target_shoot_frequence = 0;
-				chassis_shoot_motor->motor_controller.speed_PID->output = 0;
-			}
+			target_shoot_frequence = 0;
+			chassis_shoot_motor->motor_controller.speed_PID->output = 0;
+			chassis_shoot_motor->motor_controller.speed_PID->i_out = 0;
+		}
 //			if(chassis_shoot_motor->target.current == 9000)//拨弹盘2006堵转
 //			{
 //				DJI_Motor_Stop(chassis_shoot_motor);
 //			}
-		}
-		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//开关小陀螺
-		if(rc_ctl -> key[KEY_PRESS].e)//开启小陀螺
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//开关小陀螺
+	if(rc_ctl -> key[KEY_PRESS].e)//开启小陀螺
+	{
+		if(gim -> ctrl_mode == STAND_NECK && chs -> mode != STOP_C)//未抬头不能小陀螺
 		{
-			if(gim -> ctrl_mode == STAND_NECK && chs -> mode != STOP_C)//未抬头不能小陀螺
-			{
-				chs -> mode = SPIN;
-			}
-		}
-		else if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].q)//挂起关闭小陀螺标志位
-		{
-			if(chs -> mode == SPIN)
-			{
-				chassis_cmd.omega_z = 0.0f;
-				chs -> mode = FOLLOW;
-			}
-		}
-		else if(rc_ctl -> key[KEY_PRESS].q)//挂起关闭小陀螺标志位
-		{
-			if(chs -> mode == SPIN)
-			{
-				Close_Spin_Flag = 1;
-			}
-		}
-		
-		if(Close_Spin_Flag)//直道小陀螺转到较为中间再退出小陀螺防止退出时距离中心太远导致底盘跟随超功率
-		{
-			if(yaw_to_mid > 0.90f)
-			{
-				Close_Spin_Flag = 0;
-				chassis_cmd.omega_z = 0.0f;
-				chs -> mode = FOLLOW;
-			}
-		}
-		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//开启底盘跟随（防止在小陀螺时死亡导致头卡在奇怪的位置，死亡后会关闭底盘跟随，复活后等头抬起再手动开启底盘跟随）
-		if(rc_ctl -> key[KEY_PRESS].g)
-		{
-			Chassis_Follow_Flag = 1;
-		}
-		if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].g)
-		{
-			chassis_cmd.omega_follow = 0;
-			Chassis_Follow_Flag = 0;
+			chs -> mode = SPIN;
 		}
 	}
-	else
+	else if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].q)//挂起关闭小陀螺标志位
 	{
-		chs -> mode = STOP_C;
-		gim -> status = GIMBAL_DISABLE;
-		gim -> ctrl_mode = STAND_NECK;			//缩头
-		shoot_mode = SHOOT_MODE_STOP;
+		if(chs -> mode == SPIN)
+		{
+			chassis_cmd.omega_z = 0.0f;
+			chs -> mode = FOLLOW;
+		}
+	}
+	else if(rc_ctl -> key[KEY_PRESS].q)//挂起关闭小陀螺标志位
+	{
+		if(chs -> mode == SPIN)
+		{
+			Close_Spin_Flag = 1;
+		}
+	}
+	
+	if(Close_Spin_Flag)//直道小陀螺转到较为中间再退出小陀螺防止退出时距离中心太远导致底盘跟随超功率
+	{
+		if(yaw_to_mid > 0.90f)
+		{
+			Close_Spin_Flag = 0;
+			chassis_cmd.omega_z = 0.0f;
+			chs -> mode = FOLLOW;
+		}
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//开启底盘跟随（防止在小陀螺时死亡导致头卡在奇怪的位置，死亡后会关闭底盘跟随，复活后等头抬起再手动开启底盘跟随）
+	if(rc_ctl -> key[KEY_PRESS].g)
+	{
+		Chassis_Follow_Flag = 1;
+	}
+	if(rc_ctl -> key[KEY_PRESS_WITH_CTRL].g)
+	{
+		chassis_cmd.omega_follow = 0;
+		Chassis_Follow_Flag = 0;
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//在超电能量低时强行启用超电
+	if(rc_ctl -> key[KEY_PRESS].z)
+	{
+		SuperCap_Forced_Use_Flag = 1;
 	}
 
 	if(rc_ctl -> key[KEY_PRESS].x == 1)
 	{
-		ui_reinit();
+//		ui_reinit();
 	}
 	
-	if(refree_data->Game_Robot_state.current_HP == 0)
+	if(referee_outer_info->RobotPerformance.current_HP == 0)
 	{
-		chassis_cmd.omega_follow = 0;
-		Chassis_Follow_Flag = 0;
+//		chassis_cmd.omega_follow = 0;
+//		Chassis_Follow_Flag = 0;
 		
 		chs -> mode = STOP_C;
 		gim -> status = GIMBAL_DISABLE;
-		gim -> ctrl_mode = STAND_NECK;			//缩头
+		gim -> ctrl_mode = SIT_NECK;			//缩头
 		shoot_mode = SHOOT_MODE_STOP;
 	}
-
 }
 
 static void Control_Task(void *argument)
@@ -396,13 +420,36 @@ static void Control_Task(void *argument)
     //Send_Packet_Init(&aim_packet_to_nuc);//与上位机通讯
     for (;;)
     {
-#if CONTROL_MODE
-        Remote_Ctrl (&gimbal_cmd, &chassis_cmd);//遥控器操纵
-#else
-		KeyboardCtrl(&gimbal_cmd, &chassis_cmd);//键鼠操纵
-#endif
+		if(rc_ctl -> rc . switch_left == 3 || rc_ctl -> rc . switch_left == 1)
+		{
+			if(Control_Mode == Keyboard_Control)//模式切换时进
+			{
+				chassis_cmd.mode = STOP_C;
+				gimbal_cmd.status = GIMBAL_DISABLE;
+				gimbal_cmd.ctrl_mode = SIT_NECK;			//缩头
+				shoot_mode = SHOOT_MODE_STOP;
+			}
+			
+			Control_Mode = Remote_Control;
+			Remote_Ctrl (&gimbal_cmd, &chassis_cmd);//遥控器操纵
+		}
+		else if(rc_ctl -> rc . switch_left == 2)
+		{
+			if(Control_Mode == Remote_Control)//模式切换时进
+			{
+				chassis_cmd.mode = STOP_C;
+				gimbal_cmd.status = GIMBAL_DISABLE;
+				gimbal_cmd.ctrl_mode = SIT_NECK;			//缩头
+				shoot_mode = SHOOT_MODE_STOP;
+			}
+			
+			Control_Mode = Keyboard_Control;
+			KeyboardCtrl(&gimbal_cmd, &chassis_cmd);//键鼠操纵
+		}
+		
 		Chassis_Cmd_Trans(&chassis_cmd, ANGLE_REFERENCE, DM_6006_yaw -> receive_data.position);//底盘坐标系转云台坐标系
-		// Supervisor_Task();
+		
+		//Supervisor_Task();
 
         control_task_diff = osKernelGetTickCount() - time;
         time = osKernelGetTickCount();

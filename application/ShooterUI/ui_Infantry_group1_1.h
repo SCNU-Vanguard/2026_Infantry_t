@@ -1,16 +1,16 @@
-//
-// Created by RM UI Designer
-//
+////
+//// Created by RM UI Designer
+////
 
-#ifndef UI_Infantry_group1_1_H
-#define UI_Infantry_group1_1_H
+//#ifndef UI_Infantry_group1_1_H
+//#define UI_Infantry_group1_1_H
 
-#include "ui_interface.h"
+//#include "ui_interface.h"
 
-extern ui_interface_string_t *ui_Infantry_group1_fric;
+//extern ui_interface_string_t *ui_Infantry_group1_fric;
 
-void _ui_init_Infantry_group1_1();
-void _ui_update_Infantry_group1_1();
-void _ui_remove_Infantry_group1_1();
+//void _ui_init_Infantry_group1_1();
+//void _ui_update_Infantry_group1_1();
+//void _ui_remove_Infantry_group1_1();
 
-#endif //UI_Infantry_group1_1_H
+//#endif //UI_Infantry_group1_1_H

@@ -4,13 +4,14 @@
 #include "chassis.h"
 #include "referee.h"
 #include "SuperCap.h"
+#include "control_task.h"
 
 float P_cal[4] = {0}; // 电机功率模型计算出的功率
 float P_total = 0;   // 测量总功率
 float P_total_temp = 0; // 临时总功率
 
 float P_cmd[4] = {0}; // 以最大功率上线分配所得的功率
-float chassis_max_power = 60; // 底盘最大功率 , 5~8W 的误差 
+float chassis_max_power = 40; // 底盘最大功率 , 5~8W 的误差 
 
 float I_temp[4] = {0};
 
@@ -29,7 +30,7 @@ float E_lower = 5.0f;   // 误差下阈值（需要调）
 float E_upper = 30.0f;  // 误差上阈值（需要调）
 //--------------------------
 
-control_mode_e Control_Mode;
+power_control_mode_e Power_Control_Mode = SUPERCAP_CONTROL;
 
 void chassis_power_control()
 {
@@ -180,26 +181,51 @@ void chassis_power_control()
 ////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-void Power_Control()//超电似了才软件功控
+void Power_Control()
 {
-	if(Control_Mode == SUPERCAP_CONTROL && SuperCap_Data->StatusCode == 3)//错误，不可恢复
+	if(Power_Control_Mode == SUPERCAP_CONTROL && SuperCap_Data->StatusCode == 3)//错误，不可恢复
 	{
-		Control_Mode = CODE_CONTROL;
+		Power_Control_Mode = CODE_CONTROL;
 		SuperCap_SystemRestart(POWER_LIMIT, ENERGY_BUFFER);//重启超电，尝试一次，不可持续重启
-		
-		chassis_power_control();//软件功控
 	}
 	
 	if(SuperCap_Data->StatusCode == 2 || SuperCap_Data->StatusCode == 1)//错误，可恢复
 	{
-		Control_Mode = CODE_CONTROL;
+		Power_Control_Mode = CODE_CONTROL;
 		SuperCap_ClearError(POWER_LIMIT, ENERGY_BUFFER);//清除错误
-		
-		chassis_power_control();//软件功控
 	}
 	
 	if(SuperCap_Data->StatusCode == 0)
 	{
-		Control_Mode = SUPERCAP_CONTROL;
+		if(SuperCap_Data->CapEnergy < 64 && Power_Control_Mode == SUPERCAP_CONTROL)
+		{
+			Power_Control_Mode = CODE_CONTROL;
+		}
+		else if(SuperCap_Data->CapEnergy > 128 && Power_Control_Mode == CODE_CONTROL)
+		{
+			Power_Control_Mode = SUPERCAP_CONTROL;
+		}
+	}
+	
+	if(Power_Control_Mode == CODE_CONTROL)
+	{
+		if(chassis_cmd.mode == SPIN)
+		{
+			chassis_max_power = 55;
+		}
+		else
+		{
+			chassis_max_power = 40;
+		}
+		if(SuperCap_Forced_Use_Flag)
+		{
+			chassis_max_power = 55;
+			if(SuperCap_Data->CapEnergy < 10)
+			{
+				SuperCap_Forced_Use_Flag = 0;
+			}
+		}
+		
+//		chassis_power_control();//软件功控
 	}
 }

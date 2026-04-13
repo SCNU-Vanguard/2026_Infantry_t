@@ -226,4 +226,8 @@ float Get_OLS_Smooth(Ordinary_Least_Squares_t *OLS);
 //判断是否出现NAN
 bool Judge_IF_NAN(float x );
 
+float trans_zeropoint(float input, float middle_zero_point, float measure_min_value, float measure_max_value, float target_min_value, float target_max_value);
+
+float trans_thresholds(float input, float measure_min_value, float measure_max_value, float target_min_value, float target_max_value);
+
 #endif /* __USER_LIB_H__ */

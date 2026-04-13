@@ -33,5 +33,6 @@ void VOFA_Display_Power(void);
 void VOFA_Display_Shoot(void);
 void VOFA_Display_AutoAiming(void);
 void VOFA_Display_2006_Current(void);
+void VOFA_Display_SuperCap(void);
 
 #endif /* __PROCOTOL_H__ */

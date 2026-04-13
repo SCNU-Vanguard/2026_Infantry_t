@@ -20,7 +20,7 @@ float omega_follow_cal;
 float w_c = 0.005f;
 uint32_t x_c = 0;
 
-uint8_t Chassis_Follow_Flag = 16;
+uint8_t Chassis_Follow_Flag = 1;
 
 /*TEST*/
 float test_omega;
@@ -48,7 +48,7 @@ PID_t omega_follow_pid = {
     .kp = 5.0f,
     .ki = 0.05f,
     .kd = 0.0f,
-    .output_limit = 5.0f, 
+    .output_limit = 3.0f, 
     .integral_limit = 0.0f,
     .dead_band = 0.01f,
 };
@@ -165,15 +165,21 @@ float Chassis_Get_Omega_Follow(void)
 	
 	omega_follow_cal = -PID_Position(&omega_follow_pid, DM_6006_yaw -> receive_data.position, temp_omega_follow);
 	
-//	if(chassis_cmd.omega_z || gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)					//当小陀螺有转速时清空底盘跟随的值
-//	{
-//		omega_follow_cal = 0;
-//	}
-	if(chassis_cmd.omega_z || Chassis_Follow_Flag == 0)					//当小陀螺有转速时清空底盘跟随的值
+	if(chassis_cmd.omega_z || gimbal_cmd.ctrl_mode == AUTOMATIC_AIMING)					//当小陀螺有转速时清空底盘跟随的值
 	{
 		omega_follow_cal = 0;
+		chassis_cmd.omega_follow = 0;
 		omega_follow_pid.output = 0;
+		omega_follow_pid.i_out = 0;
 	}
+	
+//	if(chassis_cmd.omega_z)					//当小陀螺有转速时清空底盘跟随的值
+//	{
+//		omega_follow_cal = 0;
+//		chassis_cmd.omega_follow = 0;
+//		omega_follow_pid.output = 0;
+//		omega_follow_pid.i_out = 0;
+//	}
 	
 	return omega_follow_cal;
 }
@@ -191,6 +197,7 @@ void Chassis_Init(void)
         chassis_3508_init.can_init_config.rx_id = 0x01 + i;
         chassis_m3508[i] = DJI_Motor_Init(&chassis_3508_init);
     }
+	chassis_cmd.mode = STOP_C;
 }
 
 void Chassis_Enable(void)
@@ -220,6 +227,13 @@ void Chassis_Ctrl_Remote(void)
 	{
 		chassis_cmd.omega_follow = Chassis_Get_Omega_Follow();
 	}
+	else if(chassis_cmd.omega_z || Chassis_Follow_Flag == 0)					//当小陀螺有转速时清空底盘跟随的值
+	{
+		omega_follow_cal = 0;
+		omega_follow_pid.output = 0;
+		omega_follow_pid.i_out = 0;
+	}
+	
 	//设目标值
 	for(int i = 0; i < 4; i++)
 	{
@@ -247,7 +261,9 @@ void Chassis_Ctrl_Remote(void)
 		{
 			x_c = 0;
 		}
-		chassis_cmd.omega_z = (float)(0.75f*sinf(w_c*x_c)+2.75f);
+//		chassis_cmd.omega_z = (float)(0.75f*sinf(w_c*x_c)+4.5f);
+		chassis_cmd.omega_z = 4.5f;
+
 				
 //		chassis_cmd.omega_z = 0.3f;
 	}
@@ -261,19 +277,21 @@ void Chassis_Ctrl_Remote(void)
 	{
 		chassis_cmd.omega_z = 0;
 		chassis_cmd.omega_follow = 0;
+		omega_follow_pid.output = 0;
+		omega_follow_pid.i_out = 0;
 		chassis_cmd.vx = 0;
 		chassis_cmd.vy = 0; 
 		Chassis_Stop();
 	}
 
-	// for(int i = 0; i < 4; i++)
-	// {
-	// 	if(chassis_m3508[i]->error_code&DJI_MOTOR_LOST_ERROR)
-	// 	{
-	// 		chassis_m3508[i]->motor_controller.speed_PID->output = 0;
-	// 		chassis_m3508[i]->motor_controller.speed_PID->i_out = 0;
-	// 	}
-	// }
+//	for(int i = 0; i < 4; i++)
+//	{
+//		if(chassis_m3508[i]->error_code&DJI_MOTOR_LOST_ERROR)
+//		{
+//			chassis_m3508[i]->motor_controller.speed_PID->output = 0;
+//			chassis_m3508[i]->motor_controller.speed_PID->i_out = 0;
+//		}
+//	}
 
 	DJI_Motor_Control();//电机pid计算及发送控制报文 , 与波弹盘拆解 
 }

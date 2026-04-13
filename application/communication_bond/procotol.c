@@ -38,9 +38,13 @@ void VOFA_Display_IMU(void)
     vofa_data_view[5] = imu_data.gyro[2];
 
     vofa_data_view[6] = imu_data.temperature;
+	
+	vofa_data_view[7] = INS.Pitch;
+    vofa_data_view[8] = INS.Roll;
+    vofa_data_view[9] = INS.Yaw;
 
     //VOFA_Send_Data(vofa_data_view, 7);
-    VOFA_JustFloat(vofa_data_view, 7);
+    VOFA_JustFloat(vofa_data_view, 10);
 }
 
 void VOFA_Display_Pitch_Head(void)
@@ -150,4 +154,12 @@ void VOFA_Display_2006_Current(void)
 	vofa_data_view[0] = (float)chassis_shoot_motor->target.current;
 	
 	VOFA_JustFloat(vofa_data_view, 1);
+}
+
+void VOFA_Display_SuperCap(void)
+{
+	vofa_data_view[0] = SuperCap_Data->ChassisPower;
+	vofa_data_view[1] = SuperCap_Data->CapEnergy;
+	
+	VOFA_JustFloat(vofa_data_view, 2);
 }

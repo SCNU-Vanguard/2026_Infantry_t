@@ -17,6 +17,8 @@
 #include "ui_interface.h"
 #include "defense_center.h"
 
+#if USE_RAW == 1
+
 uint8_t referee_rx_len;    //裁判系统串口idle中断接收数据长度
 uint8_t referee_pic_rx_len;
 uint8_t referee_rx_buf[REFEREE_RXBUFF_SIZE];           //dma接收区
@@ -34,6 +36,9 @@ static Referee_PicInfoTypedef referee_picinfo;
 
 static uint8_t refree_init_flag = 0; // 裁判系统初始化标志位
 static uint8_t refreepic_init_flag = 0;
+
+/* 键盘/鼠标命令缓存（LEN_keyboard_information == 12） */
+static ext_robot_command_t get_vaule;
 
 static Pic_setchannel_data_t     set_channel_data;             //设置图传信道的数据包
 static Pic_getchannel_data_t     get_channel_data;             //查询图传信道的数据包
@@ -154,7 +159,7 @@ void RefereeSolve(uint8_t *data)
 
 	uint16_t offset_frame_tail = (data[Offset_SOF_DataLength + 1]<<8) + data[Offset_SOF_DataLength]
 							+LEN_CMD_ID +LEN_FRAME_HEAD;
-	uint16_t cmd_id = (data[Offset_cmd_ID + 1] << 8 | data[Offset_cmd_ID] );
+	uint16_t cmd_id = ((uint16_t)data[Offset_cmd_ID + 1] << 8) | (uint16_t)data[Offset_cmd_ID];
 
 	if(data[0] != 0xA5 || !Verify_CRC16_Check_Sum(data, offset_frame_tail +2)
 			           || !Verify_CRC8_Check_Sum(data, LEN_FRAME_HEAD))
@@ -255,8 +260,8 @@ void RefereeSolve(uint8_t *data)
 	
 //#ifndef USE_REMOTE_KEYBORAD
 //	case ID_keyboard_information:
-//			memcpy(&(get_value.keyboard), (data + Offset_data), LEN_keyboard_information);
-//			break;
+//		memcpy(&get_vaule, (data + Offset_data), LEN_keyboard_information);
+//		break;
 //#endif
 	}
 
@@ -271,8 +276,7 @@ void RefereePicSolve(uint8_t *data)
 
 	uint16_t offset_frame_tail = (data[Offset_SOF_DataLength + 1]<<8) + data[Offset_SOF_DataLength]
 							+LEN_CMD_ID +LEN_FRAME_HEAD;
-	uint16_t cmd_id = (data[Offset_cmd_ID + 1] << 8 | data[Offset_cmd_ID] );
-
+	uint16_t cmd_id = ((uint16_t)data[Offset_cmd_ID + 1] << 8) | (uint16_t)data[Offset_cmd_ID];
 	if(data[0] != 0xA5 || !Verify_CRC16_Check_Sum(data, offset_frame_tail +2)
 			           || !Verify_CRC8_Check_Sum(data, LEN_FRAME_HEAD))
 	{
@@ -295,10 +299,9 @@ void RefereePicSolve(uint8_t *data)
 				break;
 		
 #ifndef USE_REMOTE_KEYBORAD
-	  case ID_keyboard_information:
-		  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//				memcpy(&(get_value.keyboard), (data + Offset_data), LEN_keyboard_information);
-				break;
+	case ID_keyboard_information:
+								memcpy(&get_vaule, (data + Offset_data), LEN_keyboard_information);
+								break;
 #endif
 	}
 		if(data[offset_frame_tail+2] == 0xA5)
@@ -371,4 +374,4 @@ Referee_PicInfoTypedef *RefereePic_Init(UART_HandleTypeDef *refereepic_usart_han
 	return (&referee_picinfo);
 }
 
-
+#endif

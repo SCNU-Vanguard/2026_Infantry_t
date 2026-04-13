@@ -18,10 +18,14 @@
 #include "ui.h"
 
 
-
+typedef enum
+{
+	Keyboard_Control = 0,
+	Remote_Control = 1,
+} Control_Mode_e;
 
 static void Control_Task(void *argument);
 void Control_Task_Init(void);
-
+extern uint8_t SuperCap_Forced_Use_Flag;
 
 #endif

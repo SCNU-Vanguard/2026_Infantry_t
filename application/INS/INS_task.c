@@ -38,7 +38,7 @@ void INS_Task_Init(void)
 	const osThreadAttr_t attr = {
 		.name = "INS_Task",
 		.stack_size = 128 * 8,
-		.priority = (osPriority_t) osPriorityRealtime4,
+		.priority = (osPriority_t) osPriorityRealtime7,
 	};
 	INS_task_handel = osThreadNew(INS_Task, NULL, &attr);
 

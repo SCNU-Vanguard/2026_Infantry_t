@@ -17,6 +17,9 @@
 #include "shoot_motor.h"
 #include "rs485.h"
 
+#include "referee_task.h"
+#include "rm_referee.h"
+#include "referee_UI.h"
 
 #define SHOOT_MODE_STOP 0
 #define SHOOT_MODE_FIRE 1
@@ -48,6 +51,8 @@ extern shoot_motor_instance_t *friction_motor[3];
 extern float temp_v_yaw;
 extern float temp_v_pitch_neck;
 extern float temp_v_pitch_head;
+
+extern referee_info_t *referee_outer_info;
 
 void Shoot_Init(void);
 void Shoot_Enable(void);

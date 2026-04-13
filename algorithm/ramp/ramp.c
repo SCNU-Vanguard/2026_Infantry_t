@@ -21,6 +21,8 @@ float y_3;
 float y_4;
 float y_5;
 float y_6;
+
+float MAX_SPEED = 3.5;
  
 float Ramp_data1(uint8_t x)
 {
